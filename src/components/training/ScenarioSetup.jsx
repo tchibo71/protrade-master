@@ -1,10 +1,35 @@
 import { useState } from "react";
 import { TRADES, LEVELS, SCENARIO_TYPES, SETTINGS, LEVEL_ORDER } from "@/lib/constants";
-import { Lock, Unlock, ChevronDown } from "lucide-react";
+import { Lock, Unlock, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+const LICENSE_TYPES = [
+  "Electrical Contractor",
+  "Plumbing Contractor",
+  "HVAC Contractor",
+  "General Contractor",
+  "Roofing Contractor",
+  "Masonry Contractor",
+  "Concrete Contractor",
+  "Excavation / Grading Contractor",
+  "Septic System Installer (TDEC Licensed)",
+  "Landscape Contractor",
+  "Waterproofing / Drainage Contractor",
+  "Drywall / Plastering Contractor",
+  "Carpentry Contractor",
+];
+
+const TRADE_MODE_TABS = [
+  { id: "list", label: "Select Trades" },
+  { id: "license", label: "By License Type" },
+  { id: "custom", label: "Custom Description" },
+];
+
 export default function ScenarioSetup({ onGenerate, progressRecords, isLevelUnlocked }) {
+  const [tradeMode, setTradeMode] = useState("list");
   const [trades, setTrades] = useState([]);
+  const [licenseType, setLicenseType] = useState("");
+  const [customTrade, setCustomTrade] = useState("");
   const [level, setLevel] = useState("Novice");
   const [scenarioType, setScenarioType] = useState(SCENARIO_TYPES[0]);
   const [setting, setSetting] = useState(SETTINGS[0]);
@@ -17,11 +42,19 @@ export default function ScenarioSetup({ onGenerate, progressRecords, isLevelUnlo
     );
   };
 
-  const canGenerate = trades.length > 0 && isLevelUnlocked(level) && (!isPersonal || personalDescription.trim());
+  const effectiveTrades = () => {
+    if (tradeMode === "list") return trades;
+    if (tradeMode === "license") return licenseType ? [licenseType] : [];
+    if (tradeMode === "custom") return customTrade.trim() ? [customTrade.trim()] : [];
+    return [];
+  };
+
+  const hasValidTrade = effectiveTrades().length > 0;
+  const canGenerate = hasValidTrade && isLevelUnlocked(level) && (!isPersonal || personalDescription.trim());
 
   const handleGenerate = () => {
     if (!canGenerate) return;
-    onGenerate({ trades, level, scenarioType, setting, isPersonal, personalDescription });
+    onGenerate({ trades: effectiveTrades(), level, scenarioType, setting, isPersonal, personalDescription });
   };
 
   return (
@@ -58,25 +91,77 @@ export default function ScenarioSetup({ onGenerate, progressRecords, isLevelUnlo
 
       {/* Trade Selection */}
       <div>
-        <label className="block text-sm font-semibold text-gray-300 mb-3">
-          Trade(s) <span className="text-gray-500 font-normal">(select one or more)</span>
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {TRADES.map(trade => (
+        <label className="block text-sm font-semibold text-gray-300 mb-3">Trade / Specialty</label>
+
+        {/* Mode Tabs */}
+        <div className="flex gap-1 bg-gray-900 border border-gray-800 rounded-lg p-1 mb-4 w-fit flex-wrap">
+          {TRADE_MODE_TABS.map(tab => (
             <button
-              key={trade}
-              onClick={() => toggleTrade(trade)}
+              key={tab.id}
+              onClick={() => setTradeMode(tab.id)}
               className={cn(
-                "px-3 py-1.5 rounded-lg text-sm border transition-colors",
-                trades.includes(trade)
-                  ? "bg-yellow-400 text-gray-900 border-yellow-400 font-medium"
-                  : "bg-gray-900 text-gray-300 border-gray-700 hover:border-gray-500"
+                "px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
+                tradeMode === tab.id ? "bg-yellow-400 text-gray-900" : "text-gray-400 hover:text-white"
               )}
             >
-              {trade}
+              {tab.label}
             </button>
           ))}
         </div>
+
+        {/* List mode */}
+        {tradeMode === "list" && (
+          <div className="flex flex-wrap gap-2">
+            {TRADES.map(trade => (
+              <button
+                key={trade}
+                onClick={() => toggleTrade(trade)}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg text-sm border transition-colors",
+                  trades.includes(trade)
+                    ? "bg-yellow-400 text-gray-900 border-yellow-400 font-medium"
+                    : "bg-gray-900 text-gray-300 border-gray-700 hover:border-gray-500"
+                )}
+              >
+                {trade}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* License mode */}
+        {tradeMode === "license" && (
+          <div>
+            <select
+              value={licenseType}
+              onChange={e => setLicenseType(e.target.value)}
+              className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-yellow-400"
+            >
+              <option value="">— Select a contractor license type —</option>
+              {LICENSE_TYPES.map(l => <option key={l} value={l}>{l}</option>)}
+            </select>
+            {licenseType && (
+              <p className="text-xs text-yellow-400 mt-2">Scenario will be tailored to: <strong>{licenseType}</strong></p>
+            )}
+          </div>
+        )}
+
+        {/* Custom mode */}
+        {tradeMode === "custom" && (
+          <div>
+            <input
+              type="text"
+              className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-yellow-400"
+              placeholder="e.g. Septic pumping, French drains / drainage solutions, Crawl space encapsulation..."
+              value={customTrade}
+              onChange={e => setCustomTrade(e.target.value)}
+            />
+            <p className="text-xs text-gray-500 mt-1.5">Type any trade, specialty, or job description. The AI will use this to build a targeted scenario.</p>
+            {customTrade.trim() && (
+              <p className="text-xs text-yellow-400 mt-1">Scenario will be tailored to: <strong>{customTrade.trim()}</strong></p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Level Selection */}
