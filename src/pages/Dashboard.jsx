@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { LEVELS, LEVEL_ORDER } from "@/lib/constants";
 import { BookOpen, Search, TrendingUp, Award, Flame, AlertTriangle } from "lucide-react";
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, Tooltip } from "recharts";
+import SkillProficiency from "@/components/dashboard/SkillProficiency";
 
 export default function Dashboard() {
   const [sessions, setSessions] = useState([]);
@@ -94,6 +95,8 @@ export default function Dashboard() {
           </div>
         </Link>
       </div>
+
+      <SkillProficiency sessions={sessions} />
 
       <div className="grid sm:grid-cols-2 gap-6">
         {/* Radar Chart */}

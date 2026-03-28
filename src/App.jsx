@@ -10,6 +10,9 @@ import Dashboard from '@/pages/Dashboard';
 import Training from '@/pages/Training';
 import CodeLookup from '@/pages/CodeLookup';
 import Progress from '@/pages/Progress';
+import TrainingHistory from '@/pages/TrainingHistory';
+import TrainingSessionDetail from '@/pages/TrainingSessionDetail';
+import ReviewMode from '@/pages/ReviewMode';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -38,6 +41,9 @@ const AuthenticatedApp = () => {
         <Route path="/training" element={<Training />} />
         <Route path="/code-lookup" element={<CodeLookup />} />
         <Route path="/progress" element={<Progress />} />
+        <Route path="/training-history" element={<TrainingHistory />} />
+        <Route path="/training-history/:sessionId" element={<TrainingSessionDetail />} />
+        <Route path="/review" element={<ReviewMode />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
