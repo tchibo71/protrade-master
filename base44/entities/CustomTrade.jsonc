@@ -1,0 +1,22 @@
+{
+  "name": "CustomTrade",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The name of the custom trade or specialty"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of the trade and its scope"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this trade is currently active and available for training"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

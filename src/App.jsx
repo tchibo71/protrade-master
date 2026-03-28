@@ -13,6 +13,7 @@ import Progress from '@/pages/Progress';
 import TrainingHistory from '@/pages/TrainingHistory';
 import TrainingSessionDetail from '@/pages/TrainingSessionDetail';
 import ReviewMode from '@/pages/ReviewMode';
+import TradeManager from '@/pages/TradeManager';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -44,6 +45,7 @@ const AuthenticatedApp = () => {
         <Route path="/training-history" element={<TrainingHistory />} />
         <Route path="/training-history/:sessionId" element={<TrainingSessionDetail />} />
         <Route path="/review" element={<ReviewMode />} />
+        <Route path="/trade-manager" element={<TradeManager />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

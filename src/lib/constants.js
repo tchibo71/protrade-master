@@ -1,17 +1,73 @@
 export const TRADES = [
+  // Electrical & Mechanical
   "Electrical",
+  "Electrician",
+  "Plumber",
   "Plumbing",
   "HVAC",
+  // Structural & Framing
   "Carpentry / Framing",
+  "Remodeling Contractor",
   "Drywall / Finishing",
+  // Roofing & Exterior
   "Roofing",
+  "Roofer",
+  "Gutter Installer",
+  // Masonry & Concrete
   "Concrete / Masonry",
+  "Mason",
+  "Block Mason",
+  "Concrete Finisher",
+  "Concrete Retaining Wall Contractor",
+  // Septic & Well
   "Septic Systems",
-  "Retaining Walls",
-  "Guttering / Drainage",
-  "Hardscaping",
+  "Septic System Installer",
+  "Septic Tank Installer",
+  "Septic System Designer",
+  "Septic System Inspector",
+  "Septic System Pumper",
+  "Well Driller",
+  "Well Pump Installer",
+  // Site Work & Earthmoving
   "Excavation / Site Preparation",
-  "Drainage Solutions"
+  "Excavation Contractor",
+  "Grading Contractor",
+  "Site Work Contractor",
+  "Trenching Contractor",
+  "Earthmoving Contractor",
+  // Drainage & Stormwater
+  "Drainage Solutions",
+  "Drainage Contractor",
+  "Underground Drainage Contractor",
+  "Surface Drainage Contractor",
+  "Stormwater Drainage Contractor",
+  "French Drain Installer",
+  "Catch Basin Installer",
+  "Culvert Installer",
+  "Sump Pump Installer",
+  "Drainage System Designer",
+  "Erosion Control Contractor",
+  "Sediment Control Contractor",
+  "Stormwater BMP Installer",
+  // Retaining Walls
+  "Retaining Walls",
+  "Retaining Wall Contractor",
+  "Segmental Retaining Wall Installer",
+  "Timber Retaining Wall Installer",
+  "Gabion Wall Installer",
+  "Geo-Grid & MSE Wall Contractor",
+  // Hardscaping & Paving
+  "Hardscaping",
+  "Hardscaping Contractor",
+  "Paver Installer",
+  "Interlocking Concrete Paver Installer",
+  "Natural Stone Paver Installer",
+  "Permeable Paver Installer",
+  "Patio & Walkway Contractor",
+  "Driveway Contractor",
+  // Landscape & Other
+  "Landscape Contractor",
+  "Guttering / Drainage",
 ];
 
 export const LEVELS = [
@@ -57,7 +113,19 @@ export const SCENARIO_GENERATOR_PROMPT = `You are a master contractor trainer op
 You are creating a scenario that will be presented to a contractor trainee. The scenario must be specific, realistic, and challenge the trainee at their exact skill level. It must have one correct best-practice answer that reflects both top-tier workmanship AND full code compliance under Tennessee jurisdiction.
 
 ## JURISDICTION NOTE
-Primary jurisdiction: Tennessee. Greene County headquarters. Work area: Bristol to Chattanooga corridor, TN/NC State line to Hancock County and beyond Anderson County. All code citations must reference: Tennessee State Building Code, applicable NEC adoptions, IPC/IRC Tennessee adoptions, IMC Tennessee adoptions, TDEC Rules Chapter 0400-48-01, OSHA standards, Greene County and applicable local amendments.
+Primary jurisdiction: Tennessee. Greene County headquarters. Work area: Bristol to Chattanooga corridor, TN/NC State line to Hancock County and beyond Anderson County.
+
+ALL applicable governing standards must be cited and enforced, including but not limited to:
+- **Federal:** OSHA 29 CFR (all applicable parts), EPA regulations, federal building codes, ADA/ABA, FHWA standards
+- **Tennessee State:** Tennessee State Building Code, TCA (Tennessee Code Annotated) all applicable titles, TOSHA regulations, TDEC Rules Chapter 0400-48-01 (septic/subsurface), TDEC stormwater & erosion rules, TN Dept of Commerce and Insurance regs, TN Board for Licensing Contractors requirements, TN Dept of Agriculture rules, TN Dept of Health regulations
+- **International Codes (Tennessee adoptions):** NEC (NFPA 70), IRC, IBC, IPC, IMC, IFGC, IECC, IFC, ISPSC, IFBC
+- **NFPA Standards:** NFPA 13, 54, 58, 72, 101, and all other applicable NFPA standards
+- **ASHRAE Standards:** ASHRAE 90.1, 62.1, 15, and all other applicable standards
+- **AWWA Standards** (water/well work), **ASTM Standards** (materials), **ANSI Standards** (all trades), **AWS Standards** (welding/structural)
+- **EPA/NPDES:** Stormwater, erosion, sediment control, BMP requirements
+- **TDOT Standards** (when near roadways), **Greene County & local amendments**, applicable utility authority requirements
+- **Manufacturer specifications and installation instructions** (always binding per code)
+- Any other applicable federal agency, state agency, trade association, or standards body governing the specific trade or task
 
 ## SCENARIO PARAMETERS
 You will receive the following inputs from the app:
@@ -103,7 +171,17 @@ Generate your scenario in this exact format:
 export const EVALUATOR_PROMPT = `You are a master contractor trainer and inspector operating in Tennessee with expert-level knowledge of all applicable trade codes, standards, and best practices. You are evaluating a trainee's written answer to a contractor training scenario.
 
 ## JURISDICTION NOTE
-Primary jurisdiction: Tennessee. Greene County headquarters. Work area: Bristol to Chattanooga, TN/NC State line to Hancock County and beyond Anderson County. Code citations must reference applicable Tennessee statutes, agency/departmental regulations (TDEC, TOSHA, TN Dept of Commerce and Insurance), NEC Tennessee adoption, IPC/IRC Tennessee adoption, IMC Tennessee adoption, TDEC Rules Chapter 0400-48-01, Greene County local amendments, and applicable building codes and construction standards.
+Primary jurisdiction: Tennessee. Greene County headquarters. Work area: Bristol to Chattanooga, TN/NC State line to Hancock County and beyond Anderson County.
+
+ALL applicable governing standards must be cited and evaluated, including but not limited to:
+- **Federal:** OSHA 29 CFR (all parts), EPA, ADA/ABA, federal statutes and agency rules
+- **Tennessee State:** TCA all applicable titles, TOSHA, TDEC Rules (0400-48-01 and all stormwater/erosion rules), TN Dept of Commerce and Insurance, TN Board for Licensing Contractors, TN Dept of Agriculture, TN Dept of Health
+- **International Codes (TN adoptions):** NEC (NFPA 70), IRC, IBC, IPC, IMC, IFGC, IECC, IFC, ISPSC
+- **NFPA, ASHRAE, AWWA, ASTM, ANSI, AWS** standards applicable to the trade
+- **EPA/NPDES** stormwater, erosion, sediment control, BMP requirements
+- **TDOT standards** (near roadways), Greene County and local amendments
+- **Manufacturer specifications** (always binding per code — failure to follow = code violation)
+- Any other applicable standards body for the specific trade or task
 
 ## YOUR ROLE
 You will receive:
@@ -181,7 +259,17 @@ Score across five categories (0–20 each, total 100):
 export const IDEAL_ANSWER_PROMPT = `You are a master contractor trainer in Tennessee with expert-level knowledge across all trades and applicable codes. You are providing the ideal, complete, gold-standard answer to a contractor training scenario.
 
 ## JURISDICTION NOTE
-Primary jurisdiction: Tennessee. Greene County headquarters. Work area: Bristol to Chattanooga, TN/NC State line to Hancock County and beyond Anderson County. All citations must reference applicable Tennessee statutes, agency/departmental regulations (TDEC, TOSHA, TN Dept of Commerce and Insurance, TN Board for Licensing Contractors), NEC Tennessee adoption, IPC/IRC Tennessee adoption, IMC Tennessee adoption, TDEC Rules Chapter 0400-48-01, Greene County local amendments, and all applicable building codes and construction standards.
+Primary jurisdiction: Tennessee. Greene County headquarters. Work area: Bristol to Chattanooga, TN/NC State line to Hancock County and beyond Anderson County.
+
+ALL applicable governing standards must be cited in the ideal answer, including but not limited to:
+- **Federal:** OSHA 29 CFR (all parts), EPA, ADA/ABA, federal statutes and agency rules
+- **Tennessee State:** TCA all applicable titles, TOSHA, TDEC Rules (0400-48-01 and all stormwater/erosion rules), TN Dept of Commerce and Insurance, TN Board for Licensing Contractors, TN Dept of Agriculture, TN Dept of Health
+- **International Codes (TN adoptions):** NEC (NFPA 70), IRC, IBC, IPC, IMC, IFGC, IECC, IFC, ISPSC
+- **NFPA, ASHRAE, AWWA, ASTM, ANSI, AWS** standards applicable to the trade
+- **EPA/NPDES** stormwater, erosion, sediment control, BMP requirements
+- **TDOT standards** (near roadways), Greene County and local amendments
+- **Manufacturer specifications** (always binding per code)
+- Any other applicable standards body for the specific trade or task
 
 ## OUTPUT FORMAT
 

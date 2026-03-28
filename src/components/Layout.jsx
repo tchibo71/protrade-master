@@ -1,5 +1,5 @@
 import { Link, useLocation, Outlet } from "react-router-dom";
-import { LayoutDashboard, BookOpen, Search, BarChart2, HardHat, History, RotateCcw } from "lucide-react";
+import { LayoutDashboard, BookOpen, Search, BarChart2, HardHat, History, RotateCcw, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -9,6 +9,7 @@ const navItems = [
   { path: "/progress", label: "Progress", icon: BarChart2 },
   { path: "/training-history", label: "History", icon: History },
   { path: "/review", label: "Review Mode", icon: RotateCcw },
+  { path: "/trade-manager", label: "Trade Manager", icon: Wrench },
 ];
 
 export default function Layout() {

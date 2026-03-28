@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
 import { TRADES, LEVELS, SCENARIO_TYPES, SETTINGS, LEVEL_ORDER } from "@/lib/constants";
 import { Lock, Unlock, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,13 @@ const TRADE_MODE_TABS = [
 ];
 
 export default function ScenarioSetup({ onGenerate, progressRecords, isLevelUnlocked }) {
+  const [customTrades, setCustomTrades] = useState([]);
+  const allTrades = [...TRADES, ...customTrades.filter(t => t.active).map(t => t.name)];
+
+  useEffect(() => {
+    base44.entities.CustomTrade.list("-created_date", 200).then(setCustomTrades);
+  }, []);
+
   const [tradeMode, setTradeMode] = useState("list");
   const [trades, setTrades] = useState([]);
   const [licenseType, setLicenseType] = useState("");
@@ -112,7 +120,7 @@ export default function ScenarioSetup({ onGenerate, progressRecords, isLevelUnlo
         {/* List mode */}
         {tradeMode === "list" && (
           <div className="flex flex-wrap gap-2">
-            {TRADES.map(trade => (
+            {allTrades.map(trade => (
               <button
                 key={trade}
                 onClick={() => toggleTrade(trade)}
