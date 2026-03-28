@@ -1,0 +1,66 @@
+{
+  "name": "TrainingSession",
+  "type": "object",
+  "properties": {
+    "trade": {
+      "type": "string"
+    },
+    "trades": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "level": {
+      "type": "string"
+    },
+    "scenario_type": {
+      "type": "string"
+    },
+    "setting": {
+      "type": "string"
+    },
+    "scenario_text": {
+      "type": "string"
+    },
+    "user_answer": {
+      "type": "string"
+    },
+    "evaluation_text": {
+      "type": "string"
+    },
+    "ideal_answer_text": {
+      "type": "string"
+    },
+    "score_safety": {
+      "type": "number"
+    },
+    "score_code": {
+      "type": "number"
+    },
+    "score_workmanship": {
+      "type": "number"
+    },
+    "score_completeness": {
+      "type": "number"
+    },
+    "score_judgment": {
+      "type": "number"
+    },
+    "score_total": {
+      "type": "number"
+    },
+    "is_personal_scenario": {
+      "type": "boolean",
+      "default": false
+    },
+    "personal_description": {
+      "type": "string"
+    },
+    "session_date": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": []
+}

@@ -1,0 +1,26 @@
+{
+  "name": "UserProgress",
+  "type": "object",
+  "properties": {
+    "level": {
+      "type": "string"
+    },
+    "unlocked": {
+      "type": "boolean",
+      "default": false
+    },
+    "consecutive_80_plus": {
+      "type": "number",
+      "default": 0
+    },
+    "total_scenarios_at_level": {
+      "type": "number",
+      "default": 0
+    },
+    "avg_score_at_level": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": []
+}
