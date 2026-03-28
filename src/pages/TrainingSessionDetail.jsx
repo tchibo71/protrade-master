@@ -1,10 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import ReactMarkdown from "react-markdown";
 import { ArrowLeft, Download, Loader2, FileText, MessageSquare, Star, Lightbulb } from "lucide-react";
 import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 
 function ScoreRow({ label, score, max = 20 }) {
   const pct = (score / max) * 100;
@@ -25,7 +24,6 @@ export default function TrainingSessionDetail() {
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [activeTab, setActiveTab] = useState("scenario");
-  const printRef = useRef();
 
   const sessionId = window.location.pathname.split("/").pop();
 
@@ -38,20 +36,69 @@ export default function TrainingSessionDetail() {
 
   const exportPDF = async () => {
     setExporting(true);
-    // Show all content for export
-    const element = printRef.current;
-    const canvas = await html2canvas(element, { backgroundColor: "#030712", scale: 1.5, useCORS: true });
-    const imgData = canvas.toDataURL("image/png");
+
     const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-    let yOffset = 0;
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    while (yOffset < pdfHeight) {
-      if (yOffset > 0) pdf.addPage();
-      pdf.addImage(imgData, "PNG", 0, -yOffset, pdfWidth, pdfHeight);
-      yOffset += pageHeight;
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const margin = 18;
+    const contentW = pageW - margin * 2;
+    let y = margin;
+
+    const addText = (text, fontSize, isBold = false, color = [30, 30, 30], lineGap = 2) => {
+      pdf.setFontSize(fontSize);
+      pdf.setFont("helvetica", isBold ? "bold" : "normal");
+      pdf.setTextColor(...color);
+      const lines = pdf.splitTextToSize(String(text || ""), contentW);
+      lines.forEach(line => {
+        if (y + fontSize * 0.352 + lineGap > pageH - margin) {
+          pdf.addPage();
+          y = margin;
+        }
+        pdf.text(line, margin, y);
+        y += fontSize * 0.352 + lineGap;
+      });
+      y += 2; // extra spacing after block
+    };
+
+    const addSection = (title, body) => {
+      y += 3;
+      addText(title, 13, true, [180, 130, 0]);
+      addText(body, 10, false, [40, 40, 40], 1.8);
+    };
+
+    const stripMarkdown = (md) =>
+      (md || "")
+        .replace(/#{1,6}\s*/g, "")
+        .replace(/\*\*(.*?)\*\*/g, "$1")
+        .replace(/\*(.*?)\*/g, "$1")
+        .replace(/`{1,3}[^`]*`{1,3}/g, "")
+        .replace(/^\s*[-*+]\s+/gm, "• ")
+        .replace(/^\s*\d+\.\s+/gm, (m) => m.trim() + " ")
+        .replace(/\|.*\|/g, "")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+
+    // Title
+    addText("TN Contractor Trainer — Session Report", 18, true, [20, 20, 20]);
+    addText(`${session.session_date || ""} · ${session.level || ""} · ${trades}`, 10, false, [100, 100, 100]);
+
+    // Scores
+    if (session.score_total != null) {
+      y += 4;
+      addText(`Total Score: ${session.score_total}/100`, 13, true, [20, 20, 20]);
+      addText(
+        `Safety: ${session.score_safety}/20  ·  Code: ${session.score_code}/20  ·  Workmanship: ${session.score_workmanship}/20  ·  Completeness: ${session.score_completeness}/20  ·  Judgment: ${session.score_judgment}/20`,
+        9, false, [80, 80, 80], 1.5
+      );
     }
+
+    addSection("Scenario", stripMarkdown(session.scenario_text));
+    addSection("Your Answer", session.user_answer || "(no answer recorded)");
+    addSection("AI Evaluation", stripMarkdown(session.evaluation_text));
+    if (session.ideal_answer_text) {
+      addSection("Ideal Answer", stripMarkdown(session.ideal_answer_text));
+    }
+
     pdf.save(`training-session-${session.session_date || "export"}.pdf`);
     setExporting(false);
   };
@@ -152,39 +199,7 @@ export default function TrainingSessionDetail() {
         )}
       </div>
 
-      {/* Hidden full content for PDF export */}
-      <div className="fixed -left-[9999px] top-0">
-        <div ref={printRef} className="bg-gray-950 text-white p-8 w-[800px] space-y-6">
-          <div>
-            <h1 className="text-2xl font-bold text-yellow-400">TN Contractor Trainer — Session Report</h1>
-            <p className="text-gray-400 text-sm mt-1">{session.session_date} · {session.level} · {trades}</p>
-          </div>
-          {session.score_total != null && (
-            <div>
-              <h2 className="text-lg font-bold text-white mb-2">Total Score: {session.score_total}/100</h2>
-              <p className="text-gray-300 text-sm">Safety: {session.score_safety}/20 · Code: {session.score_code}/20 · Workmanship: {session.score_workmanship}/20 · Completeness: {session.score_completeness}/20 · Judgment: {session.score_judgment}/20</p>
-            </div>
-          )}
-          <div>
-            <h2 className="text-lg font-bold text-yellow-300 mb-2">Scenario</h2>
-            <p className="text-gray-200 text-sm whitespace-pre-wrap">{session.scenario_text}</p>
-          </div>
-          <div>
-            <h2 className="text-lg font-bold text-yellow-300 mb-2">Your Answer</h2>
-            <p className="text-gray-200 text-sm whitespace-pre-wrap">{session.user_answer}</p>
-          </div>
-          <div>
-            <h2 className="text-lg font-bold text-yellow-300 mb-2">AI Evaluation</h2>
-            <p className="text-gray-200 text-sm whitespace-pre-wrap">{session.evaluation_text}</p>
-          </div>
-          {session.ideal_answer_text && (
-            <div>
-              <h2 className="text-lg font-bold text-blue-300 mb-2">Ideal Answer</h2>
-              <p className="text-gray-200 text-sm whitespace-pre-wrap">{session.ideal_answer_text}</p>
-            </div>
-          )}
-        </div>
-      </div>
+
     </div>
   );
 }
