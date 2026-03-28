@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import ReactMarkdown from "react-markdown";
 import { ArrowLeft, Download, Loader2, FileText, MessageSquare, Star, Lightbulb } from "lucide-react";
 import jsPDF from "jspdf";
+import ChallengePanel from "@/components/training/ChallengePanel";
 
 function ScoreRow({ label, score, max = 20 }) {
   const pct = (score / max) * 100;
@@ -183,14 +184,20 @@ export default function TrainingSessionDetail() {
           </div>
         )}
         {activeTab === "answer" && (
-          <div className="text-gray-200 text-sm whitespace-pre-wrap leading-relaxed">
-            {session.user_answer || <span className="text-gray-500 italic">No answer recorded.</span>}
-          </div>
+          <>
+            <div className="text-gray-200 text-sm whitespace-pre-wrap leading-relaxed">
+              {session.user_answer || <span className="text-gray-500 italic">No answer recorded.</span>}
+            </div>
+            <ChallengePanel session={session} context="Your Answer" />
+          </>
         )}
         {activeTab === "evaluation" && (
-          <div className="prose prose-invert prose-sm max-w-none text-gray-200">
-            <ReactMarkdown>{session.evaluation_text}</ReactMarkdown>
-          </div>
+          <>
+            <div className="prose prose-invert prose-sm max-w-none text-gray-200">
+              <ReactMarkdown>{session.evaluation_text}</ReactMarkdown>
+            </div>
+            <ChallengePanel session={session} context="Evaluation" />
+          </>
         )}
         {activeTab === "ideal" && (
           <div className="prose prose-invert prose-sm max-w-none text-gray-200">
