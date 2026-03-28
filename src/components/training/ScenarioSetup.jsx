@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { TRADES, LEVELS, SCENARIO_TYPES, SETTINGS, LEVEL_ORDER } from "@/lib/constants";
+import { TRADES, LEVELS, SCENARIO_TYPES, SETTINGS, LEVEL_ORDER, PROFESSIONAL_TRADE_GROUPS } from "@/lib/constants";
 import { Lock, Unlock, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -28,7 +28,13 @@ const TRADE_MODE_TABS = [
 
 export default function ScenarioSetup({ onGenerate, progressRecords, isLevelUnlocked }) {
   const [customTrades, setCustomTrades] = useState([]);
-  const allTrades = [...TRADES, ...customTrades.filter(t => t.active).map(t => t.name)];
+
+  const professionalTradeSet = new Set(
+    PROFESSIONAL_TRADE_GROUPS.flatMap(cat =>
+      cat.groups.flatMap(g => [g.parent, ...g.specialties])
+    )
+  );
+  const isProfessionalTrade = (t) => professionalTradeSet.has(t);
 
   useEffect(() => {
     base44.entities.CustomTrade.list("-created_date", 200).then(setCustomTrades);
@@ -119,20 +125,67 @@ export default function ScenarioSetup({ onGenerate, progressRecords, isLevelUnlo
 
         {/* List mode */}
         {tradeMode === "list" && (
-          <div className="flex flex-wrap gap-2">
-            {allTrades.map(trade => (
-              <button
-                key={trade}
-                onClick={() => toggleTrade(trade)}
-                className={cn(
-                  "px-3 py-1.5 rounded-lg text-sm border transition-colors",
-                  trades.includes(trade)
-                    ? "bg-yellow-400 text-gray-900 border-yellow-400 font-medium"
-                    : "bg-gray-900 text-gray-300 border-gray-700 hover:border-gray-500"
-                )}
-              >
-                {trade}
-              </button>
+          <div className="space-y-5">
+            {/* Contractor trades — flat */}
+            <div className="flex flex-wrap gap-2">
+              {[...TRADES.filter(t => !isProfessionalTrade(t)), ...customTrades.filter(t => t.active).map(t => t.name)].map(trade => (
+                <button
+                  key={trade}
+                  onClick={() => toggleTrade(trade)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-lg text-sm border transition-colors",
+                    trades.includes(trade)
+                      ? "bg-yellow-400 text-gray-900 border-yellow-400 font-medium"
+                      : "bg-gray-900 text-gray-300 border-gray-700 hover:border-gray-500"
+                  )}
+                >
+                  {trade}
+                </button>
+              ))}
+            </div>
+
+            {/* Professional trades — grouped */}
+            {PROFESSIONAL_TRADE_GROUPS.map(cat => (
+              <div key={cat.category}>
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">{cat.category}</p>
+                <div className="space-y-2">
+                  {cat.groups.map(group => (
+                    <div key={group.parent}>
+                      {/* Parent (always selectable) */}
+                      <button
+                        onClick={() => toggleTrade(group.parent)}
+                        className={cn(
+                          "px-3 py-1.5 rounded-lg text-sm border transition-colors font-semibold",
+                          trades.includes(group.parent)
+                            ? "bg-yellow-400 text-gray-900 border-yellow-400"
+                            : "bg-gray-800 text-gray-200 border-gray-600 hover:border-gray-400"
+                        )}
+                      >
+                        {group.parent}
+                      </button>
+                      {/* Sub-specialties */}
+                      {group.specialties.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mt-1.5 ml-3">
+                          {group.specialties.map(spec => (
+                            <button
+                              key={spec}
+                              onClick={() => toggleTrade(spec)}
+                              className={cn(
+                                "px-2.5 py-1 rounded-md text-xs border transition-colors",
+                                trades.includes(spec)
+                                  ? "bg-yellow-400 text-gray-900 border-yellow-400 font-medium"
+                                  : "bg-gray-900 text-gray-400 border-gray-700 hover:border-gray-500"
+                              )}
+                            >
+                              {spec}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         )}

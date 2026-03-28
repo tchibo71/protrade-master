@@ -68,6 +68,116 @@ export const TRADES = [
   // Landscape & Other
   "Landscape Contractor",
   "Guttering / Drainage",
+  // Professional — Law
+  "Attorney / Legal (General)",
+  "Criminal Law Attorney",
+  "Criminal Defense Attorney",
+  "Prosecutor / District Attorney",
+  "Civil Litigation Attorney",
+  "Plaintiff's Litigation Attorney",
+  "Defense Litigation Attorney",
+  "Family Law Attorney",
+  "Divorce & Separation Attorney",
+  "Child Custody & Support Attorney",
+  "Adoption Attorney",
+  "Corporate / Business Law Attorney",
+  "Business Formation & Contracts Attorney",
+  "Mergers & Acquisitions Attorney",
+  "Employment & Labor Law Attorney",
+  "Real Estate Law Attorney",
+  "Residential Real Estate Attorney",
+  "Commercial Real Estate Attorney",
+  "Landlord-Tenant Attorney",
+  "Estate Planning & Probate Attorney",
+  "Wills & Trusts Attorney",
+  "Probate & Estate Administration Attorney",
+  "Elder Law Attorney",
+  "Immigration Law Attorney",
+  "Family-Based Immigration Attorney",
+  "Business & Employment Immigration Attorney",
+  "Deportation Defense Attorney",
+  // Professional — Accounting
+  "Accountant (General)",
+  "Certified Public Accountant (CPA)",
+  "Tax Accountant",
+  "Forensic Accountant",
+  "Auditor",
+  "Bookkeeper",
+  "Payroll Specialist",
+  "Financial Advisor / Planner",
+  // Professional — Holistic & Naturopathic Health
+  "Holistic Health Practitioner (General)",
+  "Naturopathic Doctor (ND)",
+  "Homeopathic Practitioner",
+  "Homeopathic Doctor",
+  "Herbalist / Botanical Medicine Practitioner",
+  "Nutritional Therapist",
+  "Functional Medicine Practitioner",
+  "Ayurvedic Practitioner",
+  "Traditional Chinese Medicine (TCM) Practitioner",
+  "Acupuncturist",
+  "Massage Therapist",
+  "Reiki Practitioner",
+  "Health Coach / Wellness Coach",
+];
+
+// Grouped structure for professional trades (for UI rendering)
+export const PROFESSIONAL_TRADE_GROUPS = [
+  {
+    category: "Law",
+    groups: [
+      {
+        parent: "Attorney / Legal (General)",
+        specialties: [],
+      },
+      {
+        parent: "Criminal Law",
+        specialties: ["Criminal Defense Attorney", "Prosecutor / District Attorney"],
+      },
+      {
+        parent: "Civil Litigation",
+        specialties: ["Plaintiff's Litigation Attorney", "Defense Litigation Attorney"],
+      },
+      {
+        parent: "Family Law",
+        specialties: ["Divorce & Separation Attorney", "Child Custody & Support Attorney", "Adoption Attorney"],
+      },
+      {
+        parent: "Corporate / Business Law",
+        specialties: ["Business Formation & Contracts Attorney", "Mergers & Acquisitions Attorney", "Employment & Labor Law Attorney"],
+      },
+      {
+        parent: "Real Estate Law",
+        specialties: ["Residential Real Estate Attorney", "Commercial Real Estate Attorney", "Landlord-Tenant Attorney"],
+      },
+      {
+        parent: "Estate Planning & Probate",
+        specialties: ["Wills & Trusts Attorney", "Probate & Estate Administration Attorney", "Elder Law Attorney"],
+      },
+      {
+        parent: "Immigration Law",
+        specialties: ["Family-Based Immigration Attorney", "Business & Employment Immigration Attorney", "Deportation Defense Attorney"],
+      },
+    ],
+  },
+  {
+    category: "Accounting & Finance",
+    groups: [
+      {
+        parent: "Accountant (General)",
+        specialties: ["Certified Public Accountant (CPA)", "Tax Accountant", "Forensic Accountant", "Auditor", "Bookkeeper", "Payroll Specialist", "Financial Advisor / Planner"],
+      },
+    ],
+  },
+  {
+    category: "Holistic & Naturopathic Health",
+    groups: [
+      {
+        parent: "Holistic Health Practitioner (General)",
+        specialties: ["Naturopathic Doctor (ND)", "Homeopathic Practitioner", "Homeopathic Doctor", "Herbalist / Botanical Medicine Practitioner", "Nutritional Therapist", "Functional Medicine Practitioner", "Ayurvedic Practitioner", "Traditional Chinese Medicine (TCM) Practitioner", "Acupuncturist", "Massage Therapist", "Reiki Practitioner", "Health Coach / Wellness Coach"],
+      },
+    ],
+  },
 ];
 
 export const LEVELS = [
@@ -127,6 +237,12 @@ ALL applicable governing standards must be cited and enforced, including but not
 - **Manufacturer specifications and installation instructions** (always binding per code)
 - Any other applicable federal agency, state agency, trade association, or standards body governing the specific trade or task
 
+**FOR LEGAL / ATTORNEY SCENARIOS:** Also apply Tennessee Rules of Professional Conduct (Tenn. Sup. Ct. R. 8), Tennessee Board of Professional Responsibility rules, ABA Model Rules of Professional Conduct, applicable Tennessee statutes (TCA Title 29 civil, TCA Title 39 criminal, TCA Title 36 family, TCA Title 66 real estate/property, TCA Title 30-32 estates/probate, TCA Title 8 immigration-adjacent state rules), Federal Rules of Civil/Criminal Procedure, Tennessee Rules of Civil/Criminal Procedure, relevant Federal Circuit and Tennessee appellate case law, and all applicable bar ethics opinions.
+
+**FOR ACCOUNTING / FINANCE SCENARIOS:** Also apply Tennessee Board of Accountancy rules (Tenn. Code Ann. Title 62 Chapter 1), AICPA Code of Professional Conduct, GAAP (Generally Accepted Accounting Principles), GAAS (Generally Accepted Auditing Standards), IRS regulations and Treasury rules (26 CFR), Sarbanes-Oxley Act (where applicable), SEC regulations (where applicable), Tennessee Uniform CPA Act, and applicable financial planning standards (CFP Board, FINRA rules).
+
+**FOR HOLISTIC / NATUROPATHIC / HOMEOPATHIC HEALTH SCENARIOS:** Also apply Tennessee Department of Health licensing requirements, TCA Title 63 (Health Professions), Tennessee Massage Licensure Act (TCA 63-18), Tennessee Acupuncture Law (TCA 63-6), HIPAA Privacy and Security Rules (45 CFR Parts 160/164), FTC regulations on health claims and advertising, FDA regulations on supplements and homeopathic products (21 CFR), National Center for Homeopathy guidelines, American Association of Naturopathic Physicians standards, scope-of-practice limitations specific to unlicensed vs. licensed holistic practitioners in Tennessee, and any applicable informed consent requirements.
+
 ## SCENARIO PARAMETERS
 You will receive the following inputs from the app:
 - TRADE: The trade or trades involved
@@ -182,6 +298,9 @@ ALL applicable governing standards must be cited and evaluated, including but no
 - **TDOT standards** (near roadways), Greene County and local amendments
 - **Manufacturer specifications** (always binding per code — failure to follow = code violation)
 - Any other applicable standards body for the specific trade or task
+- **FOR LEGAL:** Tennessee Rules of Professional Conduct, TN Board of Professional Responsibility, ABA Model Rules, applicable TCA titles, TN/Federal Rules of Procedure, relevant case law
+- **FOR ACCOUNTING:** TN Board of Accountancy, AICPA Code, GAAP, GAAS, IRS/Treasury rules, Sarbanes-Oxley, SEC regs, CFP/FINRA standards where applicable
+- **FOR HOLISTIC/HEALTH:** TCA Title 63, TN Dept of Health licensing rules, HIPAA (45 CFR 160/164), FDA supplement/homeopathic regs, FTC health claims rules, TN scope-of-practice limits, informed consent requirements
 
 ## YOUR ROLE
 You will receive:
@@ -270,6 +389,9 @@ ALL applicable governing standards must be cited in the ideal answer, including 
 - **TDOT standards** (near roadways), Greene County and local amendments
 - **Manufacturer specifications** (always binding per code)
 - Any other applicable standards body for the specific trade or task
+- **FOR LEGAL:** Tennessee Rules of Professional Conduct, TN Board of Professional Responsibility, ABA Model Rules, applicable TCA titles, TN/Federal Rules of Procedure, relevant case law
+- **FOR ACCOUNTING:** TN Board of Accountancy, AICPA Code, GAAP, GAAS, IRS/Treasury rules, Sarbanes-Oxley, SEC regs, CFP/FINRA standards where applicable
+- **FOR HOLISTIC/HEALTH:** TCA Title 63, TN Dept of Health licensing rules, HIPAA (45 CFR 160/164), FDA supplement/homeopathic regs, FTC health claims rules, TN scope-of-practice limits, informed consent requirements
 
 ## OUTPUT FORMAT
 
