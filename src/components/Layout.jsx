@@ -44,6 +44,7 @@ export default function Layout() {
         {/* Main content */}
         <main className="flex-1 overflow-auto">
           <Outlet />
+          <div className="h-32" />
         </main>
       </div>
     </div>
