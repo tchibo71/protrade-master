@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { TRADES, LEVELS, SCENARIO_TYPES, SETTINGS, LEVEL_ORDER, SCENARIO_GENERATOR_PROMPT, EVALUATOR_PROMPT, IDEAL_ANSWER_PROMPT } from "@/lib/constants";
+import { useKnowledgeBase, buildLibraryContext } from "@/lib/useKnowledgeBase";
 import ScenarioSetup from "@/components/training/ScenarioSetup";
 import ScenarioView from "@/components/training/ScenarioView";
 import EvaluationView from "@/components/training/EvaluationView";
@@ -8,6 +9,7 @@ import EvaluationView from "@/components/training/EvaluationView";
 const STEPS = ["setup", "scenario", "evaluation", "ideal"];
 
 export default function Training() {
+  const { entries: libraryEntries } = useKnowledgeBase();
   const [step, setStep] = useState("setup");
   const [params, setParams] = useState(null);
   const [scenario, setScenario] = useState("");
@@ -39,7 +41,8 @@ export default function Training() {
     setStep("scenario");
 
     const tradeText = selectedParams.trades.join(", ");
-    const prompt = `${SCENARIO_GENERATOR_PROMPT}
+    const libraryContext = buildLibraryContext(libraryEntries, selectedParams.trades);
+    const prompt = `${libraryContext}${SCENARIO_GENERATOR_PROMPT}
 
 ## INPUT PARAMETERS
 TRADE: ${tradeText}
@@ -58,7 +61,8 @@ ${selectedParams.isPersonal ? `\nPERSONAL CONTEXT FROM USER: ${selectedParams.pe
     setLoading(true);
     setStep("evaluation");
 
-    const prompt = `${EVALUATOR_PROMPT}
+    const libraryContext = buildLibraryContext(libraryEntries, params.trades);
+    const prompt = `${libraryContext}${EVALUATOR_PROMPT}
 
 ## ORIGINAL SCENARIO
 ${scenario}
@@ -155,7 +159,8 @@ ${userAnswer}`;
     setLoading(true);
     setStep("ideal");
 
-    const prompt = `${IDEAL_ANSWER_PROMPT}
+    const libraryContext = buildLibraryContext(libraryEntries, params.trades);
+    const prompt = `${libraryContext}${IDEAL_ANSWER_PROMPT}
 
 ## ORIGINAL SCENARIO
 ${scenario}

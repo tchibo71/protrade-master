@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import ReactMarkdown from "react-markdown";
 import { Search, FileText, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useKnowledgeBase, buildLibraryContext } from "@/lib/useKnowledgeBase";
 
 const JURISDICTION_CONTEXT = `Tennessee jurisdiction, Greene County headquarters. Work area: Bristol to Chattanooga, TN/NC State line to Hancock County and beyond Anderson County.
 
@@ -59,6 +60,7 @@ Be comprehensive — do not omit any applicable requirement.
 Flag any requirements that are particularly strict, commonly missed, or frequently violated in this type of work.`;
 
 export default function CodeLookup() {
+  const { entries: libraryEntries } = useKnowledgeBase();
   const [mode, setMode] = useState("keyword");
   const [input, setInput] = useState("");
   const [result, setResult] = useState("");
@@ -71,7 +73,9 @@ export default function CodeLookup() {
     setResult("");
     setLastQuery(input);
 
-    const prompt = mode === "keyword" ? KEYWORD_PROMPT(input) : SITUATION_PROMPT(input);
+    const libraryContext = buildLibraryContext(libraryEntries, [input]);
+    const basePrompt = mode === "keyword" ? KEYWORD_PROMPT(input) : SITUATION_PROMPT(input);
+    const prompt = `${libraryContext}${basePrompt}`;
     const res = await base44.integrations.Core.InvokeLLM({ prompt, model: "claude_sonnet_4_6", add_context_from_internet: false });
     setResult(res);
     setLoading(false);

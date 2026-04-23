@@ -1,0 +1,54 @@
+{
+  "name": "KnowledgeBase",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "File name or descriptive title"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "file",
+        "url"
+      ],
+      "description": "Whether this entry came from a file upload or a URL"
+    },
+    "source_url": {
+      "type": "string",
+      "description": "Original URL if source_type is url"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "Uploaded file URL if source_type is file"
+    },
+    "content": {
+      "type": "string",
+      "description": "Extracted or scraped full text content"
+    },
+    "summary": {
+      "type": "string",
+      "description": "AI-generated summary of key rules / content"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Topic tags for retrieval relevance"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "processing",
+        "ready",
+        "error"
+      ],
+      "default": "processing"
+    }
+  },
+  "required": [
+    "title",
+    "source_type"
+  ]
+}

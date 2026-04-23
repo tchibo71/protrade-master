@@ -14,6 +14,7 @@ import TrainingHistory from '@/pages/TrainingHistory';
 import TrainingSessionDetail from '@/pages/TrainingSessionDetail';
 import ReviewMode from '@/pages/ReviewMode';
 import TradeManager from '@/pages/TradeManager';
+import DataLibrary from '@/pages/DataLibrary';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -46,6 +47,7 @@ const AuthenticatedApp = () => {
         <Route path="/training-history/:sessionId" element={<TrainingSessionDetail />} />
         <Route path="/review" element={<ReviewMode />} />
         <Route path="/trade-manager" element={<TradeManager />} />
+        <Route path="/data-library" element={<DataLibrary />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
