@@ -35,6 +35,8 @@ export default function DataLibrary() {
     if (!url) return;
     setProcessing(true);
 
+    const focusText = focusInput.trim();
+
     // Create a pending entry
     const entry = await base44.entities.KnowledgeBase.create({
       title: titleInput.trim() || url,
@@ -47,7 +49,6 @@ export default function DataLibrary() {
     setAllEntries(prev => [entry, ...prev]);
     setUrlInput("");
     setTitleInput("");
-    const focusText = focusInput.trim();
     setFocusInput("");
 
     // Fetch and extract content via LLM
