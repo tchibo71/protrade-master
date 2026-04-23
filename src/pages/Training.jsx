@@ -5,6 +5,9 @@ import { useKnowledgeBase, buildLibraryContext } from "@/lib/useKnowledgeBase";
 import ScenarioSetup from "@/components/training/ScenarioSetup";
 import ScenarioView from "@/components/training/ScenarioView";
 import EvaluationView from "@/components/training/EvaluationView";
+import FieldProblemAnalyzer from "@/components/training/FieldProblemAnalyzer";
+import { BookOpen, Wrench } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const STEPS = ["setup", "scenario", "evaluation", "ideal"];
 
@@ -19,6 +22,7 @@ export default function Training() {
   const [loading, setLoading] = useState(false);
   const [sessionId, setSessionId] = useState(null);
   const [progressRecords, setProgressRecords] = useState([]);
+  const [mode, setMode] = useState("training"); // "training" | "field"
 
   useEffect(() => {
     base44.entities.UserProgress.list().then(setProgressRecords);
@@ -199,15 +203,46 @@ ${userAnswer}`;
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      {step === "setup" && (
+    <div className="p-6 max-w-4xl mx-auto space-y-6">
+      {/* Mode Toggle — only show on setup screen or field mode */}
+      {(step === "setup" || mode === "field") && (
+        <div className="flex gap-1 bg-gray-900 border border-gray-800 rounded-xl p-1 w-fit">
+          <button
+            onClick={() => { setMode("training"); reset(); }}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+              mode === "training" ? "bg-yellow-400 text-gray-900" : "text-gray-400 hover:text-white"
+            )}
+          >
+            <BookOpen className="w-4 h-4" /> Training Scenarios
+          </button>
+          <button
+            onClick={() => { setMode("field"); reset(); }}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+              mode === "field" ? "bg-orange-500 text-white" : "text-gray-400 hover:text-white"
+            )}
+          >
+            <Wrench className="w-4 h-4" /> Field Problem Analyzer
+          </button>
+        </div>
+      )}
+
+      {mode === "field" && (
+        <FieldProblemAnalyzer
+          libraryEntries={libraryEntries}
+          onBack={() => { setMode("training"); reset(); }}
+        />
+      )}
+
+      {mode === "training" && step === "setup" && (
         <ScenarioSetup
           onGenerate={generateScenario}
           progressRecords={progressRecords}
           isLevelUnlocked={isLevelUnlocked}
         />
       )}
-      {(step === "scenario" || step === "evaluation" || step === "ideal") && (
+      {mode === "training" && (step === "scenario" || step === "evaluation" || step === "ideal") && (
         <ScenarioView
           scenario={scenario}
           loading={loading && step === "scenario"}
@@ -219,7 +254,7 @@ ${userAnswer}`;
           submitting={loading && step === "evaluation"}
         />
       )}
-      {step === "evaluation" && !loading && (
+      {mode === "training" && step === "evaluation" && !loading && (
         <EvaluationView
           evaluation={evaluation}
           idealAnswer={idealAnswer}
@@ -230,7 +265,7 @@ ${userAnswer}`;
           step={step}
         />
       )}
-      {step === "ideal" && (
+      {mode === "training" && step === "ideal" && (
         <EvaluationView
           evaluation={evaluation}
           idealAnswer={idealAnswer}
