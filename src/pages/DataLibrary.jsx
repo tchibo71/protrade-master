@@ -13,6 +13,7 @@ export default function DataLibrary() {
   const [urlInput, setUrlInput] = useState("");
   const [fileInput, setFileInput] = useState(null);
   const [titleInput, setTitleInput] = useState("");
+  const [focusInput, setFocusInput] = useState("");
   const [processing, setProcessing] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
   const [allEntries, setAllEntries] = useState([]);
@@ -39,19 +40,26 @@ export default function DataLibrary() {
       title: titleInput.trim() || url,
       source_type: "url",
       source_url: url,
+      focus_scope: focusText || "",
       status: "processing",
     });
 
     setAllEntries(prev => [entry, ...prev]);
     setUrlInput("");
     setTitleInput("");
+    const focusText = focusInput.trim();
+    setFocusInput("");
 
     // Fetch and extract content via LLM
-    const extractPrompt = `You are a regulatory research assistant. A user has provided the following URL: ${url}
+    const focusInstruction = focusText
+      ? `\n\nIMPORTANT — USER FOCUS SCOPE: The user only wants information about: "${focusText}". Ignore all other sections, topics, or regulations that are outside this scope. Extract ONLY content relevant to this focus area.`
+      : "";
+
+    const extractPrompt = `You are a regulatory research assistant. A user has provided the following URL: ${url}${focusInstruction}
 
 Your task:
-1. Extract and summarize ALL key rules, regulations, codes, requirements, and important text from this page.
-2. If it's a building code or trade regulation page, capture every section number, requirement, measurement, and standard.
+1. Extract and summarize the key rules, regulations, codes, requirements, and important text from this page${focusText ? ` — specifically focused on: ${focusText}` : ""}.
+2. If it's a building code or trade regulation page, capture every relevant section number, requirement, measurement, and standard.
 3. Produce a comprehensive structured summary with section headings.
 4. Then list the raw key content verbatim where possible.
 
@@ -202,6 +210,19 @@ KEY CONTENT:
             />
           </div>
 
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">
+              Focus / Scope <span className="text-gray-600">(optional — tell the AI what to extract and what to ignore)</span>
+            </label>
+            <textarea
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg p-2.5 text-white text-sm resize-none focus:outline-none focus:border-yellow-400"
+              rows={2}
+              placeholder='e.g. "Only septic system installation requirements — ignore solid waste, air quality, and water supply sections"'
+              value={focusInput}
+              onChange={e => setFocusInput(e.target.value)}
+            />
+          </div>
+
           {mode === "url" ? (
             <div>
               <label className="block text-xs text-gray-400 mb-1">URL</label>
@@ -294,6 +315,12 @@ KEY CONTENT:
 
               {expandedId === entry.id && entry.summary && (
                 <div className="border-t border-gray-800 px-4 py-4 space-y-3">
+                  {entry.focus_scope && (
+                    <div className="bg-gray-800 border border-yellow-400/20 rounded-lg px-3 py-2">
+                      <p className="text-xs text-yellow-400 font-semibold uppercase tracking-wide mb-1">Focus Scope</p>
+                      <p className="text-xs text-gray-300">{entry.focus_scope}</p>
+                    </div>
+                  )}
                   <div>
                     <p className="text-xs text-yellow-400 font-semibold uppercase tracking-wide mb-2">AI Summary</p>
                     <div className="prose prose-invert prose-sm max-w-none text-gray-300">

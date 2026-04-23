@@ -22,6 +22,10 @@
       "type": "string",
       "description": "Uploaded file URL if source_type is file"
     },
+    "focus_scope": {
+      "type": "string",
+      "description": "User-defined focus/scope instruction: what topics to extract and what to ignore"
+    },
     "content": {
       "type": "string",
       "description": "Extracted or scraped full text content"
