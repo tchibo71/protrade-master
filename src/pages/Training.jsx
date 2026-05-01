@@ -289,6 +289,10 @@ ${userAnswer}`;
           onTryAgain={tryAgain}
           onNewScenario={reset}
           step={step}
+          scenario={scenario}
+          params={params}
+          userAnswer={userAnswer}
+          libraryEntries={libraryEntries}
         />
       )}
       {mode === "training" && step === "ideal" && (
@@ -300,6 +304,10 @@ ${userAnswer}`;
           onTryAgain={tryAgain}
           onNewScenario={reset}
           step={step}
+          scenario={scenario}
+          params={params}
+          userAnswer={userAnswer}
+          libraryEntries={libraryEntries}
         />
       )}
     </div>
