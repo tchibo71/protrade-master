@@ -11,18 +11,43 @@ import { cn } from "@/lib/utils";
 
 const STEPS = ["setup", "scenario", "evaluation", "ideal"];
 
+const STORAGE_KEY = "training_session_draft";
+
+function loadDraft() {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function saveDraft(state) {
+  try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+}
+
+function clearDraft() {
+  try { sessionStorage.removeItem(STORAGE_KEY); } catch {}
+}
+
 export default function Training() {
   const { entries: libraryEntries } = useKnowledgeBase();
-  const [step, setStep] = useState("setup");
-  const [params, setParams] = useState(null);
-  const [scenario, setScenario] = useState("");
-  const [userAnswer, setUserAnswer] = useState("");
-  const [evaluation, setEvaluation] = useState(null);
-  const [idealAnswer, setIdealAnswer] = useState("");
+
+  const draft = loadDraft();
+  const [step, setStep] = useState(draft?.step ?? "setup");
+  const [params, setParams] = useState(draft?.params ?? null);
+  const [scenario, setScenario] = useState(draft?.scenario ?? "");
+  const [userAnswer, setUserAnswer] = useState(draft?.userAnswer ?? "");
+  const [evaluation, setEvaluation] = useState(draft?.evaluation ?? null);
+  const [idealAnswer, setIdealAnswer] = useState(draft?.idealAnswer ?? "");
   const [loading, setLoading] = useState(false);
-  const [sessionId, setSessionId] = useState(null);
+  const [sessionId, setSessionId] = useState(draft?.sessionId ?? null);
   const [progressRecords, setProgressRecords] = useState([]);
-  const [mode, setMode] = useState("training"); // "training" | "field"
+  const [mode, setMode] = useState(draft?.mode ?? "training"); // "training" | "field"
+
+  // Persist draft on every meaningful state change
+  useEffect(() => {
+    if (step === "setup" && !scenario) { clearDraft(); return; }
+    saveDraft({ step, params, scenario, userAnswer, evaluation, idealAnswer, sessionId, mode });
+  }, [step, params, scenario, userAnswer, evaluation, idealAnswer, sessionId, mode]);
 
   useEffect(() => {
     base44.entities.UserProgress.list().then(setProgressRecords);
@@ -185,6 +210,7 @@ ${userAnswer}`;
   };
 
   const reset = () => {
+    clearDraft();
     setStep("setup");
     setParams(null);
     setScenario("");
