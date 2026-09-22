@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { TRADES, LEVELS, SCENARIO_TYPES, SETTINGS, LEVEL_ORDER, SCENARIO_GENERATOR_PROMPT, SCENARIO_GENERATOR_RESPONSE_SCHEMA, EVALUATOR_PROMPT, IDEAL_ANSWER_PROMPT, EVALUATOR_RESPONSE_SCHEMA, IDEAL_ANSWER_RESPONSE_SCHEMA } from "@/lib/constants";
+import { TRADES, LEVELS, SCENARIO_TYPES, SETTINGS, LEVEL_ORDER, SCENARIO_GENERATOR_PROMPT, SCENARIO_GENERATOR_RESPONSE_SCHEMA, EVALUATOR_PROMPT, IDEAL_ANSWER_PROMPT, EVALUATOR_RESPONSE_SCHEMA, IDEAL_ANSWER_RESPONSE_SCHEMA, FOLLOWUP_EVALUATOR_PROMPT, FOLLOWUP_EVALUATOR_RESPONSE_SCHEMA } from "@/lib/constants";
 import { useKnowledgeBase, buildLibraryContext } from "@/lib/useKnowledgeBase";
 import ScenarioSetup from "@/components/training/ScenarioSetup";
 import ScenarioView from "@/components/training/ScenarioView";
@@ -41,13 +41,14 @@ export default function Training() {
   const [loading, setLoading] = useState(false);
   const [sessionId, setSessionId] = useState(draft?.sessionId ?? null);
   const [rubricScope, setRubricScope] = useState(draft?.rubricScope ?? []);
+  const [followupComplication, setFollowupComplication] = useState(draft?.followupComplication ?? null);
   const [progressRecords, setProgressRecords] = useState([]);
   const [mode, setMode] = useState(draft?.mode ?? "training"); // "training" | "field"
 
   // Persist draft on every meaningful state change
   useEffect(() => {
     if (step === "setup" && !scenario) { clearDraft(); return; }
-    saveDraft({ step, params, scenario, userAnswer, evaluation, idealAnswer, sessionId, mode, rubricScope });
+    saveDraft({ step, params, scenario, userAnswer, evaluation, idealAnswer, sessionId, mode, rubricScope, followupComplication });
   }, [step, params, scenario, userAnswer, evaluation, idealAnswer, sessionId, mode]);
 
   useEffect(() => {
@@ -110,6 +111,7 @@ ${userAnswer}`;
     const evalResult = await base44.integrations.Core.InvokeLLM({ prompt, model: "claude_sonnet_4_6", response_json_schema: EVALUATOR_RESPONSE_SCHEMA });
     const evalText = evalResult.evaluation_markdown;
     setEvaluation(evalText);
+    setFollowupComplication(evalResult.followup_complication || null);
 
     // Read scores directly from structured response
     const scores = {
@@ -140,6 +142,7 @@ ${userAnswer}`;
       is_personal_scenario: params.isPersonal || false,
       personal_description: params.personalDescription || "",
       rubric_scope: params.rubric_scope || rubricScope || [],
+      followup_complication: evalResult.followup_complication || "",
       session_date: new Date().toISOString().split("T")[0]
     };
     const saved = await base44.entities.TrainingSession.create(sessionData);
@@ -234,6 +237,7 @@ ${userAnswer}`;
     setIdealAnswer("");
     setSessionId(null);
     setRubricScope([]);
+    setFollowupComplication(null);
   };
 
   const tryAgain = () => {
@@ -310,6 +314,8 @@ ${userAnswer}`;
           params={params}
           userAnswer={userAnswer}
           libraryEntries={libraryEntries}
+          followupComplication={followupComplication}
+          sessionId={sessionId}
         />
       )}
       {mode === "training" && step === "ideal" && (
@@ -325,6 +331,8 @@ ${userAnswer}`;
           params={params}
           userAnswer={userAnswer}
           libraryEntries={libraryEntries}
+          followupComplication={followupComplication}
+          sessionId={sessionId}
         />
       )}
     </div>

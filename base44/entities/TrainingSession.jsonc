@@ -67,6 +67,27 @@
         "type": "string"
       },
       "description": "Which of the 5 scoring categories this scenario's task actually called for"
+    },
+    "followup_complication": {
+      "type": "string",
+      "description": "A complication/pushback raised after the initial evaluation for the trainee to respond to"
+    },
+    "followup_answer": {
+      "type": "string",
+      "description": "The trainee's response to the follow-up complication"
+    },
+    "followup_verdict": {
+      "type": "string",
+      "enum": [
+        "handled_well",
+        "partially_handled",
+        "missed_the_point"
+      ],
+      "description": "Lighter verdict on how well the trainee adapted to the complication"
+    },
+    "followup_feedback": {
+      "type": "string",
+      "description": "Feedback explaining the follow-up verdict"
     }
   },
   "required": []

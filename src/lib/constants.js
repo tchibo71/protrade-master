@@ -461,8 +461,10 @@ Score across five categories (0–20 each, total 100):
 
 ---
 
+After the full evaluation, also generate followup_complication: a single realistic complication or pushback a GC, inspector, or client would raise in response to the trainee's specific answer — something that tests whether they can adapt their approach, not just recite it. Keep it to 2-4 sentences, written as if spoken directly to the trainee on site.
+
 ## STRUCTURED RESPONSE FIELDS
-Return evaluation_markdown containing everything above (Scores table, Grade, What You Got Right, Critical Errors, Code Compliance Notes, Workmanship Notes, Summary) formatted exactly as specified, AND separately populate score_safety, score_code, score_workmanship, score_completeness, score_judgment (each 0-20) and score_total (0-100, must equal the sum of the five category scores) as structured numeric fields.`;
+Return evaluation_markdown containing everything above (Scores table, Grade, What You Got Right, Critical Errors, Code Compliance Notes, Workmanship Notes, Summary) formatted exactly as specified, AND separately populate score_safety, score_code, score_workmanship, score_completeness, score_judgment (each 0-20) and score_total (0-100, must equal the sum of the five category scores) as structured numeric fields, and followup_complication (string) as specified above.`;
 
 export const IDEAL_ANSWER_PROMPT = `You are a master contractor trainer in Tennessee with expert-level knowledge across all trades and applicable codes. You are providing the ideal, complete, gold-standard answer to a contractor training scenario.
 
@@ -540,9 +542,55 @@ export const EVALUATOR_RESPONSE_SCHEMA = {
     score_workmanship: { type: "number" },
     score_completeness: { type: "number" },
     score_judgment: { type: "number" },
-    score_total: { type: "number" }
+    score_total: { type: "number" },
+    followup_complication: { type: "string" }
   },
-  required: ["evaluation_markdown", "score_safety", "score_code", "score_workmanship", "score_completeness", "score_judgment", "score_total"]
+  required: ["evaluation_markdown", "score_safety", "score_code", "score_workmanship", "score_completeness", "score_judgment", "score_total", "followup_complication"]
+};
+
+export const FOLLOWUP_EVALUATOR_PROMPT = `You are a master contractor trainer and inspector operating in Tennessee with expert-level knowledge of all applicable trade codes, standards, and best practices. You are evaluating a trainee's follow-up response to a complication that was raised after their initial answer to a contractor training scenario.
+
+## JURISDICTION NOTE
+Primary jurisdiction: Tennessee. Greene County headquarters. Work area: Bristol to Chattanooga, TN/NC State line to Hancock County and beyond Anderson County.
+
+ALL applicable governing standards must be cited and evaluated, including but not limited to:
+- **Federal:** OSHA 29 CFR (all parts), EPA, ADA/ABA, federal statutes and agency rules
+- **Tennessee State:** TCA all applicable titles, TOSHA, TDEC Rules (0400-48-01 and all stormwater/erosion rules), TN Dept of Commerce and Insurance, TN Board for Licensing Contractors, TN Dept of Agriculture, TN Dept of Health
+- **International Codes (TN adoptions):** NEC (NFPA 70), IRC, IBC, IPC, IMC, IFGC, IECC, IFC, ISPSC
+- **NFPA, ASHRAE, AWWA, ASTM, ANSI, AWS** standards applicable to the trade
+- **EPA/NPDES** stormwater, erosion, sediment control, BMP requirements
+- **TDOT standards** (near roadways), Greene County and local amendments
+- **Manufacturer specifications** (always binding per code — failure to follow = code violation)
+- Any other applicable standards body for the specific trade or task
+- **FOR LEGAL:** Tennessee Rules of Professional Conduct, TN Board of Professional Responsibility, ABA Model Rules, applicable TCA titles, TN/Federal Rules of Procedure, relevant case law
+- **FOR ACCOUNTING:** TN Board of Accountancy, AICPA Code, GAAP, GAAS, IRS/Treasury rules, Sarbanes-Oxley, SEC regs, CFP/FINRA standards where applicable
+- **FOR HOLISTIC/HEALTH:** TCA Title 63, TN Dept of Health licensing rules, HIPAA (45 CFR 160/164), FDA supplement/homeopathic regs, FTC health claims rules, TN scope-of-practice limits, informed consent requirements
+
+## YOUR ROLE
+You will receive:
+1. The original scenario
+2. The trainee's initial answer
+3. The initial evaluation
+4. The complication / pushback that was raised
+5. The trainee's follow-up response to that complication
+
+Evaluate ONLY the follow-up response — does it appropriately adapt to the complication, or does it miss the point? This is a lighter judgment than the full 100-point rubric. Cite applicable Tennessee codes, statutes, and standards where relevant to the complication.
+
+## VERDICT OPTIONS
+- handled_well: The trainee adapted correctly and addressed the complication with sound judgment and code-aware reasoning.
+- partially_handled: The trainee addressed part of the complication but missed key considerations or reasoning was incomplete.
+- missed_the_point: The trainee failed to address the complication, doubled down on a wrong approach, or recited generic content that didn't respond to what was actually raised.
+
+## OUTPUT FORMAT
+Return followup_verdict (one of the three options above) and followup_feedback (a concise 1-3 paragraph critique explaining the verdict, citing relevant codes/standards where applicable, and noting what the trainee got right or wrong in their adaptation).`;
+
+export const FOLLOWUP_EVALUATOR_RESPONSE_SCHEMA = {
+  type: "object",
+  properties: {
+    followup_verdict: { type: "string", enum: ["handled_well", "partially_handled", "missed_the_point"] },
+    followup_feedback: { type: "string" }
+  },
+  required: ["followup_verdict", "followup_feedback"]
 };
 
 export const IDEAL_ANSWER_RESPONSE_SCHEMA = {

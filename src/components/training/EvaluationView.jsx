@@ -1,6 +1,7 @@
 import ReactMarkdown from "react-markdown";
 import { Loader2, Eye, RotateCcw, RefreshCw, Printer } from "lucide-react";
 import ChallengeEvaluationPanel from "@/components/training/ChallengeEvaluationPanel";
+import FollowupComplicationPanel from "@/components/training/FollowupComplicationPanel";
 
 const handlePrint = (evaluation, idealAnswer) => {
   const win = window.open("", "_blank");
@@ -31,7 +32,7 @@ const handlePrint = (evaluation, idealAnswer) => {
   win.print();
 };
 
-export default function EvaluationView({ evaluation, idealAnswer, loadingIdeal, onShowIdeal, onTryAgain, onNewScenario, step, scenario, params, userAnswer, libraryEntries }) {
+export default function EvaluationView({ evaluation, idealAnswer, loadingIdeal, onShowIdeal, onTryAgain, onNewScenario, step, scenario, params, userAnswer, libraryEntries, followupComplication, sessionId }) {
   return (
     <div className="space-y-6 mt-6">
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
@@ -72,6 +73,19 @@ export default function EvaluationView({ evaluation, idealAnswer, loadingIdeal, 
           <Printer className="w-4 h-4" /> Print
         </button>
       </div>
+
+      {/* Follow-up Complication */}
+      {followupComplication && (
+        <FollowupComplicationPanel
+          complication={followupComplication}
+          scenario={scenario}
+          params={params}
+          userAnswer={userAnswer}
+          evaluation={evaluation}
+          libraryEntries={libraryEntries}
+          sessionId={sessionId}
+        />
+      )}
 
       {/* Challenge Panel */}
       <ChallengeEvaluationPanel
