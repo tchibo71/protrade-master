@@ -436,7 +436,10 @@ Score across five categories (0–20 each, total 100):
 ### SUMMARY & DEVELOPMENT FOCUS
 [2–3 sentence summary + 1–2 focus areas]
 
----`;
+---
+
+## STRUCTURED RESPONSE FIELDS
+Return evaluation_markdown containing everything above (Scores table, Grade, What You Got Right, Critical Errors, Code Compliance Notes, Workmanship Notes, Summary) formatted exactly as specified, AND separately populate score_safety, score_code, score_workmanship, score_completeness, score_judgment (each 0-20) and score_total (0-100, must equal the sum of the five category scores) as structured numeric fields.`;
 
 export const IDEAL_ANSWER_PROMPT = `You are a master contractor trainer in Tennessee with expert-level knowledge across all trades and applicable codes. You are providing the ideal, complete, gold-standard answer to a contractor training scenario.
 
@@ -500,4 +503,29 @@ ALL applicable governing standards must be cited in the ideal answer, including 
 ### PRO TIPS
 [2–4 field-tested professional tips]
 
----`;
+---
+
+## STRUCTURED RESPONSE FIELD
+Return the entire ideal answer above as ideal_answer_markdown (a single string containing all sections formatted exactly as specified).`;
+
+export const EVALUATOR_RESPONSE_SCHEMA = {
+  type: "object",
+  properties: {
+    evaluation_markdown: { type: "string" },
+    score_safety: { type: "number" },
+    score_code: { type: "number" },
+    score_workmanship: { type: "number" },
+    score_completeness: { type: "number" },
+    score_judgment: { type: "number" },
+    score_total: { type: "number" }
+  },
+  required: ["evaluation_markdown", "score_safety", "score_code", "score_workmanship", "score_completeness", "score_judgment", "score_total"]
+};
+
+export const IDEAL_ANSWER_RESPONSE_SCHEMA = {
+  type: "object",
+  properties: {
+    ideal_answer_markdown: { type: "string" }
+  },
+  required: ["ideal_answer_markdown"]
+};

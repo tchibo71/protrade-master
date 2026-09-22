@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { TRADES, LEVELS, SCENARIO_TYPES, SETTINGS, LEVEL_ORDER, SCENARIO_GENERATOR_PROMPT, EVALUATOR_PROMPT, IDEAL_ANSWER_PROMPT } from "@/lib/constants";
+import { TRADES, LEVELS, SCENARIO_TYPES, SETTINGS, LEVEL_ORDER, SCENARIO_GENERATOR_PROMPT, EVALUATOR_PROMPT, IDEAL_ANSWER_PROMPT, EVALUATOR_RESPONSE_SCHEMA, IDEAL_ANSWER_RESPONSE_SCHEMA } from "@/lib/constants";
 import { useKnowledgeBase, buildLibraryContext } from "@/lib/useKnowledgeBase";
 import ScenarioSetup from "@/components/training/ScenarioSetup";
 import ScenarioView from "@/components/training/ScenarioView";
@@ -102,11 +102,19 @@ ${params.level}
 ## TRAINEE'S ANSWER
 ${userAnswer}`;
 
-    const evalText = await base44.integrations.Core.InvokeLLM({ prompt, model: "claude_sonnet_4_6" });
+    const evalResult = await base44.integrations.Core.InvokeLLM({ prompt, model: "claude_sonnet_4_6", response_json_schema: EVALUATOR_RESPONSE_SCHEMA });
+    const evalText = evalResult.evaluation_markdown;
     setEvaluation(evalText);
 
-    // Parse scores from evaluation
-    const scores = parseScores(evalText);
+    // Read scores directly from structured response
+    const scores = {
+      safety: evalResult.score_safety,
+      code: evalResult.score_code,
+      workmanship: evalResult.score_workmanship,
+      completeness: evalResult.score_completeness,
+      judgment: evalResult.score_judgment,
+      total: evalResult.score_total,
+    };
 
     // Save session
     const sessionData = {
@@ -200,11 +208,12 @@ ${params.level}
 ## TRAINEE'S ANSWER (for context only — do not repeat evaluation)
 ${userAnswer}`;
 
-    const result = await base44.integrations.Core.InvokeLLM({ prompt, model: "claude_sonnet_4_6" });
-    setIdealAnswer(result);
+    const result = await base44.integrations.Core.InvokeLLM({ prompt, model: "claude_sonnet_4_6", response_json_schema: IDEAL_ANSWER_RESPONSE_SCHEMA });
+    const idealText = result.ideal_answer_markdown;
+    setIdealAnswer(idealText);
 
     if (sessionId) {
-      await base44.entities.TrainingSession.update(sessionId, { ideal_answer_text: result });
+      await base44.entities.TrainingSession.update(sessionId, { ideal_answer_text: idealText });
     }
     setLoading(false);
   };
@@ -312,20 +321,4 @@ ${userAnswer}`;
       )}
     </div>
   );
-}
-
-function parseScores(evalText) {
-  const extract = (label) => {
-    const regex = new RegExp(`${label}\\s*\\|\\s*(\\d+)`, "i");
-    const match = evalText.match(regex);
-    return match ? parseInt(match[1]) : 0;
-  };
-  const safety = extract("Safety");
-  const code = extract("Code Compliance");
-  const workmanship = extract("Quality of Workmanship");
-  const completeness = extract("Completeness");
-  const judgment = extract("Professional Judgment");
-  const totalMatch = evalText.match(/\*\*TOTAL\*\*\s*\|\s*\*\*(\d+)/);
-  const total = totalMatch ? parseInt(totalMatch[1]) : safety + code + workmanship + completeness + judgment;
-  return { safety, code, workmanship, completeness, judgment, total };
 }
