@@ -32,7 +32,7 @@ const handlePrint = (evaluation, idealAnswer) => {
   win.print();
 };
 
-export default function EvaluationView({ evaluation, idealAnswer, loadingIdeal, onShowIdeal, onTryAgain, onNewScenario, step, scenario, params, userAnswer, libraryEntries, followupComplication, sessionId }) {
+export default function EvaluationView({ evaluation, idealAnswer, loadingIdeal, onShowIdeal, onTryAgain, onNewScenario, step, scenario, params, userAnswer, libraryEntries, followupComplication, sessionId, omittedFact, redHerring }) {
   return (
     <div className="space-y-6 mt-6">
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
@@ -41,6 +41,23 @@ export default function EvaluationView({ evaluation, idealAnswer, loadingIdeal, 
           <ReactMarkdown>{evaluation}</ReactMarkdown>
         </div>
       </div>
+
+      {/* Scenario Design Notes (revealed after scoring) */}
+      {(omittedFact || redHerring) && (
+        <details className="bg-gray-900 border border-gray-800 rounded-xl px-4 py-3">
+          <summary className="cursor-pointer text-sm font-semibold text-gray-400 hover:text-white select-none">
+            Scenario Design Notes
+          </summary>
+          <div className="mt-3 space-y-2 text-sm text-gray-300">
+            {omittedFact && (
+              <p><span className="text-gray-500 font-medium">Omitted fact:</span> {omittedFact}</p>
+            )}
+            {redHerring && (
+              <p><span className="text-gray-500 font-medium">Red herring:</span> {redHerring}</p>
+            )}
+          </div>
+        </details>
+      )}
 
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3">

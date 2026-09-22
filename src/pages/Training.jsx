@@ -77,12 +77,14 @@ export default function Training() {
   const [progressRecords, setProgressRecords] = useState([]);
   const [mode, setMode] = useState(draft?.mode ?? "training"); // "training" | "field"
   const [emphasisNote, setEmphasisNote] = useState(draft?.emphasisNote ?? "");
+  const [omittedFact, setOmittedFact] = useState(draft?.omittedFact ?? "");
+  const [redHerring, setRedHerring] = useState(draft?.redHerring ?? "");
 
   // Persist draft on every meaningful state change
   useEffect(() => {
     if (step === "setup" && !scenario) { clearDraft(); return; }
-    saveDraft({ step, params, scenario, userAnswer, evaluation, idealAnswer, sessionId, mode, rubricScope, followupComplication, emphasisNote });
-  }, [step, params, scenario, userAnswer, evaluation, idealAnswer, sessionId, mode, emphasisNote]);
+    saveDraft({ step, params, scenario, userAnswer, evaluation, idealAnswer, sessionId, mode, rubricScope, followupComplication, emphasisNote, omittedFact, redHerring });
+  }, [step, params, scenario, userAnswer, evaluation, idealAnswer, sessionId, mode, emphasisNote, omittedFact, redHerring]);
 
   useEffect(() => {
     base44.entities.UserProgress.list().then(setProgressRecords);
@@ -140,6 +142,8 @@ ${selectedParams.isPersonal ? `\nPERSONAL CONTEXT FROM USER: ${selectedParams.pe
     setRubricScope(scope);
     setParams(prev => ({ ...prev, rubric_scope: scope }));
     setEmphasisNote(weakest ? `This scenario leans toward ${weakest.label} based on recent sessions` : "");
+    setOmittedFact(result.omitted_fact || "");
+    setRedHerring(result.red_herring || "");
     setLoading(false);
   };
 
@@ -150,7 +154,8 @@ ${selectedParams.isPersonal ? `\nPERSONAL CONTEXT FROM USER: ${selectedParams.pe
 
     const libraryContext = buildLibraryContext(libraryEntries, params.trades);
     const rubricScopeBlock = `## RUBRIC SCOPE FOR THIS SCENARIO\nOnly the following categories were part of what this task asked the trainee to address: ${params.rubric_scope?.join(', ') || 'all categories'}. For any category NOT in this list, score it 20/20 by default (full credit — it wasn't part of what was asked) rather than penalizing its absence, but you may still note relevant observations about it in WORKMANSHIP NOTES or SUMMARY if genuinely relevant.\n\n`;
-    const prompt = `${libraryContext}${rubricScopeBlock}${EVALUATOR_PROMPT}
+    const infoDesignBlock = `## INFORMATION DESIGN FOR THIS SCENARIO\n${omittedFact ? `A fact was deliberately omitted from the scenario: "${omittedFact}". Note in your evaluation whether the trainee recognized this gap, asked about it, or stated a reasonable assumption in its place — credit them if they handled the gap well even if they didn't have the missing fact.\n` : ''}${redHerring ? `A red herring was included: "${redHerring}". Note whether the trainee was misled by it or correctly recognized it as irrelevant.\n` : ''}`;
+    const prompt = `${libraryContext}${rubricScopeBlock}${infoDesignBlock}${EVALUATOR_PROMPT}
 
 ## ORIGINAL SCENARIO
 ${scenario}
@@ -196,6 +201,8 @@ ${userAnswer}`;
       personal_description: params.personalDescription || "",
       rubric_scope: params.rubric_scope || rubricScope || [],
       followup_complication: evalResult.followup_complication || "",
+      omitted_fact: omittedFact || "",
+      red_herring: redHerring || "",
       session_date: new Date().toISOString().split("T")[0]
     };
     const saved = await base44.entities.TrainingSession.create(sessionData);
@@ -292,6 +299,8 @@ ${userAnswer}`;
     setRubricScope([]);
     setFollowupComplication(null);
     setEmphasisNote("");
+    setOmittedFact("");
+    setRedHerring("");
   };
 
   const tryAgain = () => {
@@ -371,6 +380,8 @@ ${userAnswer}`;
           libraryEntries={libraryEntries}
           followupComplication={followupComplication}
           sessionId={sessionId}
+          omittedFact={omittedFact}
+          redHerring={redHerring}
         />
       )}
       {mode === "training" && step === "ideal" && (
@@ -388,6 +399,8 @@ ${userAnswer}`;
           libraryEntries={libraryEntries}
           followupComplication={followupComplication}
           sessionId={sessionId}
+          omittedFact={omittedFact}
+          redHerring={redHerring}
         />
       )}
     </div>

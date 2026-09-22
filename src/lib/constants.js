@@ -333,6 +333,18 @@ CRITICAL: The SCOPE line for the given LEVEL is a hard constraint, not a suggest
 
 Also determine rubric_scope: which of these five categories does YOUR TASK actually require the trainee to address — safety, code, workmanship, completeness, judgment? Include only the categories genuinely called for by the task as written. If YOUR TASK is narrowly about one thing (e.g. pure sequencing logic), rubric_scope may be as short as ['completeness', 'judgment']. Safety and code should only be included if the task's explicit wording invites the trainee to address them — do not include a category on the assumption that a thorough trainee 'should' bring it up unprompted.
 
+## INFORMATION HANDLING BY LEVEL
+In addition to the SCOPE constraint above, each level also controls how completely information is presented in THE SCENARIO text itself:
+
+- Novice, Beginner: Present all facts needed to answer completely and explicitly in THE SCENARIO. Nothing should need to be inferred or asked about.
+- Intermediate Low, Intermediate Advanced: Present all facts needed, but include exactly one plausible-but-irrelevant detail (a red herring) that a careful trainee should recognize as not actually affecting the correct answer. Do not flag which detail this is.
+- Advanced, Journeyman: Omit exactly one fact that is necessary to fully answer YOUR TASK — something a competent tradesperson would recognize is missing and would need to ask about, infer from context clues already present in the scenario, or state an assumption about. Do not explicitly point out that something is missing.
+- Master: Include one red herring AND omit one necessary fact (as described above), AND include two details that appear to conflict with each other, where correctly resolving THE SCENARIO requires the trainee to recognize which of the two governs and explain why.
+
+Whatever you omit, add, or make conflict must still allow YOUR TASK to be answerable by a competent trainee at that level working carefully — this creates realistic difficulty, not an unsolvable trick question.
+
+If this level's INFORMATION HANDLING requires an omitted fact and/or red herring, state plainly in omitted_fact what was deliberately left out (or empty string if none for this level) and in red_herring what the irrelevant/misleading detail was (or empty string if none) — these are for internal record-keeping and will not be shown to the trainee before they answer.
+
 ## OUTPUT FORMAT
 Generate your scenario in this exact format:
 
@@ -365,9 +377,11 @@ export const SCENARIO_GENERATOR_RESPONSE_SCHEMA = {
     rubric_scope: {
       type: "array",
       items: { type: "string", enum: ["safety", "code", "workmanship", "completeness", "judgment"] }
-    }
+    },
+    omitted_fact: { type: "string" },
+    red_herring: { type: "string" }
   },
-  required: ["scenario_markdown", "rubric_scope"]
+  required: ["scenario_markdown", "rubric_scope", "omitted_fact", "red_herring"]
 };
 
 export const EVALUATOR_PROMPT = `You are a master contractor trainer and inspector operating in Tennessee with expert-level knowledge of all applicable trade codes, standards, and best practices. You are evaluating a trainee's written answer to a contractor training scenario.

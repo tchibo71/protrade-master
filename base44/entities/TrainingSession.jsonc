@@ -88,6 +88,14 @@
     "followup_feedback": {
       "type": "string",
       "description": "Feedback explaining the follow-up verdict"
+    },
+    "omitted_fact": {
+      "type": "string",
+      "description": "A fact deliberately omitted from the scenario per the level's information-handling mode (empty if none)"
+    },
+    "red_herring": {
+      "type": "string",
+      "description": "An irrelevant/misleading detail included in the scenario per the level's information-handling mode (empty if none)"
     }
   },
   "required": []
