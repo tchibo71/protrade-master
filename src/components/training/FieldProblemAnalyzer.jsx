@@ -2,7 +2,7 @@ import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { buildLibraryContext } from "@/lib/useKnowledgeBase";
 import ReactMarkdown from "react-markdown";
-import { Loader2, Wrench, RotateCcw, AlertTriangle } from "lucide-react";
+import { Loader2, Wrench, RotateCcw, AlertTriangle, ImagePlus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const FIELD_PROBLEM_PROMPT = (trade, problem) => `You are a master contractor and expert in Tennessee building codes, regulations, and best practices. A contractor in the field has a REAL problem they need solved RIGHT NOW.
@@ -15,6 +15,8 @@ ${trade || "General Contracting"}
 
 ## THE FIELD PROBLEM
 ${problem}
+
+If an image is provided, diagnose primarily from what is visible in the image, using the text description (if any) as supporting context rather than the primary source.
 
 ## YOUR TASK
 Diagnose this problem and provide a complete, actionable field fix. Be direct and practical — this contractor needs to solve this TODAY.
@@ -49,16 +51,31 @@ export default function FieldProblemAnalyzer({ libraryEntries, onBack }) {
   const [problem, setProblem] = useState("");
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
+  const [problemImage, setProblemImage] = useState(null); // base64 data URL
+
+  const handleImageSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setProblemImage(reader.result);
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
 
   const handleAnalyze = async () => {
-    if (!problem.trim()) return;
+    if (!problem.trim() && !problemImage) return;
     setLoading(true);
     setResult("");
 
     const libraryContext = buildLibraryContext(libraryEntries, trade ? [trade] : []);
-    const prompt = `${libraryContext}${FIELD_PROBLEM_PROMPT(trade, problem.trim())}`;
+    const problemText = problem.trim() || "(No text description provided — diagnose from the attached image.)";
+    const prompt = `${libraryContext}${FIELD_PROBLEM_PROMPT(trade, problemText)}`;
 
-    const res = await base44.integrations.Core.InvokeLLM({ prompt, model: "claude_sonnet_4_6" });
+    const res = await base44.integrations.Core.InvokeLLM({
+      prompt,
+      model: "claude_sonnet_4_6",
+      file_urls: problemImage ? [problemImage] : undefined,
+    });
     setResult(res);
     setLoading(false);
   };
@@ -67,6 +84,7 @@ export default function FieldProblemAnalyzer({ libraryEntries, onBack }) {
     setProblem("");
     setResult("");
     setTrade("");
+    setProblemImage(null);
   };
 
   return (
@@ -100,21 +118,52 @@ export default function FieldProblemAnalyzer({ libraryEntries, onBack }) {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-300 mb-2">Describe Your Problem</label>
+            <label className="block text-sm font-semibold text-gray-300 mb-2">
+              Describe Your Problem {problemImage && <span className="text-gray-500 font-normal">(optional with photo)</span>}
+            </label>
+
+            {problemImage && (
+              <div className="relative inline-block mb-3">
+                <img src={problemImage} alt="Problem preview" className="max-h-40 rounded-lg border border-gray-700" />
+                <button
+                  onClick={() => setProblemImage(null)}
+                  className="absolute -top-2 -right-2 bg-gray-800 border border-gray-600 rounded-full p-1 text-gray-300 hover:text-red-400 hover:border-red-500 transition-colors"
+                  aria-label="Remove image"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
             <textarea
               className="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white text-sm resize-none focus:outline-none focus:border-orange-400 min-h-[160px]"
-              placeholder="Be specific: What is happening? What did you find? What have you already tried? What are the site conditions (soil type, slope, age of system, etc.)? What's the customer complaint?"
+              placeholder={problemImage
+                ? "Optional: add any details not visible in the photo (when it started, what's already been tried, etc.)"
+                : "Be specific: What is happening? What did you find? What have you already tried? What are the site conditions (soil type, slope, age of system, etc.)? What's the customer complaint?"}
               value={problem}
               onChange={e => setProblem(e.target.value)}
             />
+
+            {!problemImage && (
+              <label className="flex items-center gap-2 w-fit cursor-pointer mt-2 px-3 py-2 rounded-lg text-sm font-medium border border-gray-700 text-gray-300 hover:bg-gray-800 hover:border-orange-500/50 transition-colors">
+                <ImagePlus className="w-4 h-4" />
+                Attach a Photo
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageSelect}
+                />
+              </label>
+            )}
           </div>
 
           <button
             onClick={handleAnalyze}
-            disabled={!problem.trim() || loading}
+            disabled={(!problem.trim() && !problemImage) || loading}
             className={cn(
               "w-full py-3 rounded-xl font-bold text-base transition-colors flex items-center justify-center gap-2",
-              problem.trim() && !loading
+              (problem.trim() || problemImage) && !loading
                 ? "bg-orange-500 hover:bg-orange-400 text-white"
                 : "bg-gray-800 text-gray-600 cursor-not-allowed"
             )}
