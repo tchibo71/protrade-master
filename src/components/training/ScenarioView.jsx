@@ -1,5 +1,5 @@
 import ReactMarkdown from "react-markdown";
-import { Loader2, RefreshCw } from "lucide-react";
+import { Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 
@@ -58,7 +58,7 @@ const RUBRIC_LABELS = {
   judgment: "Professional Judgment",
 };
 
-export default function ScenarioView({ scenario, loading, userAnswer, setUserAnswer, onSubmit, onNewScenario, step, submitting, rubricScope }) {
+export default function ScenarioView({ scenario, loading, userAnswer, setUserAnswer, onSubmit, onNewScenario, step, submitting, rubricScope, emphasisNote }) {
   const answerSubmitted = step === "evaluation" || step === "ideal";
   const showProgressBar = submitting;
 
@@ -87,6 +87,13 @@ export default function ScenarioView({ scenario, loading, userAnswer, setUserAns
           </div>
         )}
       </div>
+
+      {/* Performance-informed emphasis note */}
+      {!loading && emphasisNote && (
+        <p className="text-xs text-yellow-400/80 italic flex items-center gap-1.5">
+          <Sparkles className="w-3.5 h-3.5" /> {emphasisNote}
+        </p>
+      )}
 
       {/* Rubric Scope Badges */}
       {!loading && rubricScope && rubricScope.length > 0 && (

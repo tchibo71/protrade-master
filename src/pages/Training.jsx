@@ -28,6 +28,38 @@ function clearDraft() {
   try { sessionStorage.removeItem(STORAGE_KEY); } catch {}
 }
 
+const CATEGORY_LABELS = {
+  safety: "Safety",
+  code: "Code Compliance",
+  workmanship: "Quality of Workmanship",
+  completeness: "Completeness",
+  judgment: "Professional Judgment",
+};
+
+// Returns { category, label } for the lowest-averaging score category across
+// recent sessions, or null if there isn't enough data to judge.
+function computeWeakestCategory(sessions) {
+  if (!sessions || sessions.length < 3) return null;
+  const cats = ["safety", "code", "workmanship", "completeness", "judgment"];
+  const sums = { safety: 0, code: 0, workmanship: 0, completeness: 0, judgment: 0 };
+  const counts = { safety: 0, code: 0, workmanship: 0, completeness: 0, judgment: 0 };
+  sessions.forEach(s => {
+    cats.forEach(c => {
+      const v = s[`score_${c}`];
+      if (typeof v === "number" && !isNaN(v)) { sums[c] += v; counts[c] += 1; }
+    });
+  });
+  let weakest = null;
+  let lowest = Infinity;
+  cats.forEach(c => {
+    if (counts[c] > 0) {
+      const avg = sums[c] / counts[c];
+      if (avg < lowest) { lowest = avg; weakest = c; }
+    }
+  });
+  return weakest ? { category: weakest, label: CATEGORY_LABELS[weakest] } : null;
+}
+
 export default function Training() {
   const { entries: libraryEntries } = useKnowledgeBase();
 
@@ -44,12 +76,13 @@ export default function Training() {
   const [followupComplication, setFollowupComplication] = useState(draft?.followupComplication ?? null);
   const [progressRecords, setProgressRecords] = useState([]);
   const [mode, setMode] = useState(draft?.mode ?? "training"); // "training" | "field"
+  const [emphasisNote, setEmphasisNote] = useState(draft?.emphasisNote ?? "");
 
   // Persist draft on every meaningful state change
   useEffect(() => {
     if (step === "setup" && !scenario) { clearDraft(); return; }
-    saveDraft({ step, params, scenario, userAnswer, evaluation, idealAnswer, sessionId, mode, rubricScope, followupComplication });
-  }, [step, params, scenario, userAnswer, evaluation, idealAnswer, sessionId, mode]);
+    saveDraft({ step, params, scenario, userAnswer, evaluation, idealAnswer, sessionId, mode, rubricScope, followupComplication, emphasisNote });
+  }, [step, params, scenario, userAnswer, evaluation, idealAnswer, sessionId, mode, emphasisNote]);
 
   useEffect(() => {
     base44.entities.UserProgress.list().then(setProgressRecords);
@@ -73,7 +106,23 @@ export default function Training() {
 
     const tradeText = selectedParams.trades.join(", ");
     const libraryContext = buildLibraryContext(libraryEntries, selectedParams.trades);
-    const prompt = `${libraryContext}${SCENARIO_GENERATOR_PROMPT}
+
+    // Performance-informed emphasis: lean the scenario toward the trainee's
+    // weakest scoring category based on recent sessions at this level.
+    // Skipped for personal (real-job) scenarios so they match what was asked.
+    let emphasisBlock = "";
+    let weakest = null;
+    if (!selectedParams.isPersonal) {
+      try {
+        const recent = await base44.entities.TrainingSession.filter({ level: selectedParams.level }, "-created_date", 10);
+        weakest = computeWeakestCategory(recent);
+        if (weakest) {
+          emphasisBlock = `\n## PERFORMANCE-INFORMED EMPHASIS\nThis trainee's average score in ${weakest.label} at this level has been notably lower than their other categories across recent sessions. Where it fits naturally within the requested SCENARIO TYPE and TRADE, lean the scenario's task toward testing ${weakest.label} specifically — without making it feel forced or obviously targeted.\n`;
+        }
+      } catch {}
+    }
+
+    const prompt = `${libraryContext}${emphasisBlock}${SCENARIO_GENERATOR_PROMPT}
 
 ## INPUT PARAMETERS
 TRADE: ${tradeText}
@@ -83,10 +132,14 @@ CONTEXT: ${selectedParams.setting}
 ${selectedParams.isPersonal ? `\nPERSONAL CONTEXT FROM USER: ${selectedParams.personalDescription}` : ""}`;
 
     const result = await base44.integrations.Core.InvokeLLM({ prompt, model: "claude_sonnet_4_6", response_json_schema: SCENARIO_GENERATOR_RESPONSE_SCHEMA });
-    const scope = result.rubric_scope || [];
+    let scope = result.rubric_scope || [];
+    if (weakest && !scope.includes(weakest.category)) {
+      scope = [...scope, weakest.category];
+    }
     setScenario(result.scenario_markdown);
     setRubricScope(scope);
     setParams(prev => ({ ...prev, rubric_scope: scope }));
+    setEmphasisNote(weakest ? `This scenario leans toward ${weakest.label} based on recent sessions` : "");
     setLoading(false);
   };
 
@@ -238,6 +291,7 @@ ${userAnswer}`;
     setSessionId(null);
     setRubricScope([]);
     setFollowupComplication(null);
+    setEmphasisNote("");
   };
 
   const tryAgain = () => {
@@ -299,6 +353,7 @@ ${userAnswer}`;
           step={step}
           submitting={loading && step === "evaluation"}
           rubricScope={rubricScope}
+          emphasisNote={emphasisNote}
         />
       )}
       {mode === "training" && step === "evaluation" && !loading && (
