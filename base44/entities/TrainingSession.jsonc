@@ -60,6 +60,13 @@
     "session_date": {
       "type": "string",
       "format": "date"
+    },
+    "rubric_scope": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Which of the 5 scoring categories this scenario's task actually called for"
     }
   },
   "required": []

@@ -331,6 +331,8 @@ You will receive the following inputs from the app:
 
 CRITICAL: The SCOPE line for the given LEVEL is a hard constraint, not a suggestion. Do not generate a scenario whose scope exceeds what is specified for the input LEVEL, even if multiple trades were provided as input — if more trades were selected than the level's scope allows, choose the subset most relevant to the SCENARIO TYPE and note in the scenario that this trainee level focuses on that subset.
 
+Also determine rubric_scope: which of these five categories does YOUR TASK actually require the trainee to address — safety, code, workmanship, completeness, judgment? Include only the categories genuinely called for by the task as written. If YOUR TASK is narrowly about one thing (e.g. pure sequencing logic), rubric_scope may be as short as ['completeness', 'judgment']. Safety and code should only be included if the task's explicit wording invites the trainee to address them — do not include a category on the assumption that a thorough trainee 'should' bring it up unprompted.
+
 ## OUTPUT FORMAT
 Generate your scenario in this exact format:
 
@@ -350,11 +352,23 @@ Generate your scenario in this exact format:
 
 ### YOUR TASK
 
-[Write 1–3 clear sentences stating exactly what the trainee must explain.]
+[Write 1–3 clear sentences stating exactly what the trainee must explain. If safety, code compliance, workmanship, or completeness considerations are part of what you want graded, say so explicitly in the task text itself (e.g. 'including relevant safety requirements') — do not grade on a category the task didn't ask the trainee to cover.]
 
 ---
 
 **NOTE:** Do not provide any hints, suggestions, or partial answers.`;
+
+export const SCENARIO_GENERATOR_RESPONSE_SCHEMA = {
+  type: "object",
+  properties: {
+    scenario_markdown: { type: "string" },
+    rubric_scope: {
+      type: "array",
+      items: { type: "string", enum: ["safety", "code", "workmanship", "completeness", "judgment"] }
+    }
+  },
+  required: ["scenario_markdown", "rubric_scope"]
+};
 
 export const EVALUATOR_PROMPT = `You are a master contractor trainer and inspector operating in Tennessee with expert-level knowledge of all applicable trade codes, standards, and best practices. You are evaluating a trainee's written answer to a contractor training scenario.
 

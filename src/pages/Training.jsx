@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { TRADES, LEVELS, SCENARIO_TYPES, SETTINGS, LEVEL_ORDER, SCENARIO_GENERATOR_PROMPT, EVALUATOR_PROMPT, IDEAL_ANSWER_PROMPT, EVALUATOR_RESPONSE_SCHEMA, IDEAL_ANSWER_RESPONSE_SCHEMA } from "@/lib/constants";
+import { TRADES, LEVELS, SCENARIO_TYPES, SETTINGS, LEVEL_ORDER, SCENARIO_GENERATOR_PROMPT, SCENARIO_GENERATOR_RESPONSE_SCHEMA, EVALUATOR_PROMPT, IDEAL_ANSWER_PROMPT, EVALUATOR_RESPONSE_SCHEMA, IDEAL_ANSWER_RESPONSE_SCHEMA } from "@/lib/constants";
 import { useKnowledgeBase, buildLibraryContext } from "@/lib/useKnowledgeBase";
 import ScenarioSetup from "@/components/training/ScenarioSetup";
 import ScenarioView from "@/components/training/ScenarioView";
@@ -40,13 +40,14 @@ export default function Training() {
   const [idealAnswer, setIdealAnswer] = useState(draft?.idealAnswer ?? "");
   const [loading, setLoading] = useState(false);
   const [sessionId, setSessionId] = useState(draft?.sessionId ?? null);
+  const [rubricScope, setRubricScope] = useState(draft?.rubricScope ?? []);
   const [progressRecords, setProgressRecords] = useState([]);
   const [mode, setMode] = useState(draft?.mode ?? "training"); // "training" | "field"
 
   // Persist draft on every meaningful state change
   useEffect(() => {
     if (step === "setup" && !scenario) { clearDraft(); return; }
-    saveDraft({ step, params, scenario, userAnswer, evaluation, idealAnswer, sessionId, mode });
+    saveDraft({ step, params, scenario, userAnswer, evaluation, idealAnswer, sessionId, mode, rubricScope });
   }, [step, params, scenario, userAnswer, evaluation, idealAnswer, sessionId, mode]);
 
   useEffect(() => {
@@ -80,8 +81,11 @@ SCENARIO TYPE: ${selectedParams.scenarioType}
 CONTEXT: ${selectedParams.setting}
 ${selectedParams.isPersonal ? `\nPERSONAL CONTEXT FROM USER: ${selectedParams.personalDescription}` : ""}`;
 
-    const result = await base44.integrations.Core.InvokeLLM({ prompt, model: "claude_sonnet_4_6" });
-    setScenario(result);
+    const result = await base44.integrations.Core.InvokeLLM({ prompt, model: "claude_sonnet_4_6", response_json_schema: SCENARIO_GENERATOR_RESPONSE_SCHEMA });
+    const scope = result.rubric_scope || [];
+    setScenario(result.scenario_markdown);
+    setRubricScope(scope);
+    setParams(prev => ({ ...prev, rubric_scope: scope }));
     setLoading(false);
   };
 
@@ -91,7 +95,8 @@ ${selectedParams.isPersonal ? `\nPERSONAL CONTEXT FROM USER: ${selectedParams.pe
     setStep("evaluation");
 
     const libraryContext = buildLibraryContext(libraryEntries, params.trades);
-    const prompt = `${libraryContext}${EVALUATOR_PROMPT}
+    const rubricScopeBlock = `## RUBRIC SCOPE FOR THIS SCENARIO\nOnly the following categories were part of what this task asked the trainee to address: ${params.rubric_scope?.join(', ') || 'all categories'}. For any category NOT in this list, score it 20/20 by default (full credit — it wasn't part of what was asked) rather than penalizing its absence, but you may still note relevant observations about it in WORKMANSHIP NOTES or SUMMARY if genuinely relevant.\n\n`;
+    const prompt = `${libraryContext}${rubricScopeBlock}${EVALUATOR_PROMPT}
 
 ## ORIGINAL SCENARIO
 ${scenario}
@@ -134,6 +139,7 @@ ${userAnswer}`;
       score_total: scores.total,
       is_personal_scenario: params.isPersonal || false,
       personal_description: params.personalDescription || "",
+      rubric_scope: params.rubric_scope || rubricScope || [],
       session_date: new Date().toISOString().split("T")[0]
     };
     const saved = await base44.entities.TrainingSession.create(sessionData);
@@ -227,6 +233,7 @@ ${userAnswer}`;
     setEvaluation(null);
     setIdealAnswer("");
     setSessionId(null);
+    setRubricScope([]);
   };
 
   const tryAgain = () => {
@@ -287,6 +294,7 @@ ${userAnswer}`;
           onNewScenario={reset}
           step={step}
           submitting={loading && step === "evaluation"}
+          rubricScope={rubricScope}
         />
       )}
       {mode === "training" && step === "evaluation" && !loading && (

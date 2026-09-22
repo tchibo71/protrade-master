@@ -50,7 +50,15 @@ function AnalysisProgressBar({ active }) {
   );
 }
 
-export default function ScenarioView({ scenario, loading, userAnswer, setUserAnswer, onSubmit, onNewScenario, step, submitting }) {
+const RUBRIC_LABELS = {
+  safety: "Safety",
+  code: "Code Compliance",
+  workmanship: "Workmanship",
+  completeness: "Completeness",
+  judgment: "Professional Judgment",
+};
+
+export default function ScenarioView({ scenario, loading, userAnswer, setUserAnswer, onSubmit, onNewScenario, step, submitting, rubricScope }) {
   const answerSubmitted = step === "evaluation" || step === "ideal";
   const showProgressBar = submitting;
 
@@ -79,6 +87,18 @@ export default function ScenarioView({ scenario, loading, userAnswer, setUserAns
           </div>
         )}
       </div>
+
+      {/* Rubric Scope Badges */}
+      {!loading && rubricScope && rubricScope.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs text-gray-400">Graded on:</span>
+          {rubricScope.map(cat => (
+            <span key={cat} className="px-2 py-0.5 rounded-full bg-yellow-400/15 border border-yellow-400/30 text-yellow-400 text-xs font-medium">
+              {RUBRIC_LABELS[cat] || cat}
+            </span>
+          ))}
+        </div>
+      )}
 
       {/* Answer Box */}
       {!loading && (
