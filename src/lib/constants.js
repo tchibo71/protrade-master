@@ -315,12 +315,21 @@ You will receive the following inputs from the app:
 
 ## EXPERIENCE LEVEL DEFINITIONS
 - Novice — Has never done professional contractor work. Scenarios involve the most fundamental tasks.
+  SCOPE: Exactly one trade, one task, one phase of work. No multi-trade coordination.
 - Beginner — Has done basic tasks under supervision. Standard single-trade tasks.
+  SCOPE: One trade, may involve 1-2 sequential steps within a single phase.
 - Intermediate Low — Completed real jobs independently. Moderately complex tasks.
+  SCOPE: One to two trades, single phase, may involve one code intersection.
 - Intermediate Advanced — Competent but not mastering edge cases. Complex installs, tricky code intersections.
+  SCOPE: Up to three trades, single phase, may involve inspection hold points.
 - Advanced — Highly competent. Non-standard situations, multiple code considerations.
+  SCOPE: Multiple trades within one phase, or two adjacent phases of a project.
 - Journeyman — Near-expert. Complex multi-system coordination, code edge cases.
+  SCOPE: Multi-trade coordination across several phases, may span most of a project.
 - Master — The pinnacle. Absolutely flawless work required. Complex coordination, code mastery, long-term quality.
+  SCOPE: Full project lifecycle, all selected trades, all phases from permit to Certificate of Occupancy — this is the only level where a whole-project scenario like this is appropriate.
+
+CRITICAL: The SCOPE line for the given LEVEL is a hard constraint, not a suggestion. Do not generate a scenario whose scope exceeds what is specified for the input LEVEL, even if multiple trades were provided as input — if more trades were selected than the level's scope allows, choose the subset most relevant to the SCENARIO TYPE and note in the scenario that this trainee level focuses on that subset.
 
 ## OUTPUT FORMAT
 Generate your scenario in this exact format:

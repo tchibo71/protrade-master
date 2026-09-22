@@ -50,11 +50,34 @@ export default function ScenarioSetup({ onGenerate, progressRecords, isLevelUnlo
   const [isPersonal, setIsPersonal] = useState(false);
   const [personalDescription, setPersonalDescription] = useState("");
 
-  const toggleTrade = (trade) => {
-    setTrades(prev =>
-      prev.includes(trade) ? prev.filter(t => t !== trade) : [...prev, trade]
-    );
+  const TRADE_CAP_BY_LEVEL = {
+    "Novice": 1,
+    "Beginner": 1,
+    "Intermediate Low": 3,
+    "Intermediate Advanced": 3,
   };
+
+  const tradeCap = tradeMode === "list" ? (TRADE_CAP_BY_LEVEL[level] ?? Infinity) : Infinity;
+  const [capMessage, setCapMessage] = useState("");
+
+  const toggleTrade = (trade) => {
+    setTrades(prev => {
+      if (prev.includes(trade)) return prev.filter(t => t !== trade);
+      if (prev.length >= tradeCap) {
+        setCapMessage(
+          tradeCap === 1
+            ? "Novice and Beginner scenarios focus on a single trade — choose a higher level for multi-trade coordination scenarios"
+            : `${level} scenarios allow up to ${tradeCap} trades`
+        );
+        return prev;
+      }
+      setCapMessage("");
+      return [...prev, trade];
+    });
+  };
+
+  // Clear cap message when level or trade mode changes
+  useEffect(() => { setCapMessage(""); }, [level, tradeMode]);
 
   const effectiveTrades = () => {
     if (tradeMode === "list") return trades;
@@ -126,6 +149,11 @@ export default function ScenarioSetup({ onGenerate, progressRecords, isLevelUnlo
         {/* List mode */}
         {tradeMode === "list" && (
           <div className="space-y-5">
+            {capMessage && (
+              <div className="text-xs text-amber-400 bg-amber-400/10 border border-amber-400/30 rounded-lg px-3 py-2">
+                {capMessage}
+              </div>
+            )}
             {/* Contractor trades — flat */}
             <div className="flex flex-wrap gap-2">
               {[...TRADES.filter(t => !isProfessionalTrade(t)), ...customTrades.filter(t => t.active).map(t => t.name)].map(trade => (
