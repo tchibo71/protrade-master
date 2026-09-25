@@ -3,7 +3,7 @@ import { Loader2, Eye, RotateCcw, RefreshCw, Printer } from "lucide-react";
 import ChallengeEvaluationPanel from "@/components/training/ChallengeEvaluationPanel";
 import FollowupComplicationPanel from "@/components/training/FollowupComplicationPanel";
 
-const handlePrint = (evaluation, idealAnswer) => {
+const handlePrint = (scenario, userAnswer, evaluation, idealAnswer) => {
   const win = window.open("", "_blank");
   win.document.write(`
     <html>
@@ -21,6 +21,10 @@ const handlePrint = (evaluation, idealAnswer) => {
       </head>
       <body>
         <h1>Evaluation Report</h1>
+        <h2>Original Scenario</h2>
+        <pre>${scenario || ""}</pre>
+        <h2>Your Answer</h2>
+        <pre>${userAnswer || ""}</pre>
         <h2>Evaluation</h2>
         <pre>${evaluation || ""}</pre>
         ${idealAnswer ? `<h2>Ideal Answer</h2><pre>${idealAnswer}</pre>` : ""}
@@ -84,7 +88,7 @@ export default function EvaluationView({ evaluation, idealAnswer, loadingIdeal, 
           <RefreshCw className="w-4 h-4" /> New Scenario
         </button>
         <button
-          onClick={() => handlePrint(evaluation, idealAnswer)}
+          onClick={() => handlePrint(scenario, userAnswer, evaluation, idealAnswer)}
           className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors border border-gray-700"
         >
           <Printer className="w-4 h-4" /> Print
